@@ -104,19 +104,9 @@
       background: #f9f9f9;
     }
     
-    .status-up {
-      color: #4CAF50;
-      font-weight: bold;
-    }
-    
-    .status-down {
-      color: #f44336;
-      font-weight: bold;
-    }
-    
-    .icon {
-      font-size: 1.2em;
-      margin-right: 8px;
+    .status-icon {
+      font-size: 1.5em;
+      text-align: center;
     }
     
     .comment {
@@ -224,9 +214,8 @@
         const tr = tbody.insertRow();
         tr.innerHTML = `
           <td class="comment"><strong>${item.comment || '-'}</strong></td>
-          <td class="${isUp ? 'status-up' : 'status-down'}">
-            <span class="icon">${isUp ? '🟢' : '🔴'}</span>
-            ${isUp ? 'UP' : 'DOWN'}
+          <td class="status-icon">
+            ${isUp ? '🟢' : '🔴'}
           </td>
           <td class="timestamp">${item.timestamp || 'N/A'}</td>
         `;

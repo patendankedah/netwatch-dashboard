@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetWatch Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 40px; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 2em; font-weight: bold; color: #333; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .stat-up { color: #27ae60; }
+        .stat-down { color: #e74c3c; }
+        .devices { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .device-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .device-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .status-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; margin-right: 10px; }
+        .status-dot.up { background-color: #27ae60; box-shadow: 0 0 10px #27ae60; }
+        .status-dot.down { background-color: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
+        .device-name { font-size: 1.3em; font-weight: bold; color: #333; }
+        .device-status-text { font-weight: bold; }
+        .device-status-text.up { color: #27ae60; }
+        .device-status-text.down { color: #e74c3c; }
+        .device-info { color: #666; font-size: 0.85em; margin-top: 10px; }
+        .loading { text-align: center; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NetWatch Dashboard</h1>
+            <p>MikroTik Host Monitoring</p>
+        </div>
+        <div id="loading" class="loading">Loading...</div>
+        <div id="content" style="display: none;">
+            <div class="stats">
+                <div class="stat-card"><div class="stat-value"><span id="totalCount">0</span></div><div class="stat-label">Total Host</div></div>
+                <div class="stat-card"><div class="stat-value stat-up"><span id="upCount">0</span></div><div class="stat-label">Host UP</div></div>
+                <div class="stat-card"><div class="stat-value stat-down"><span id="downCount">0</span></div><div class="stat-label">Host DOWN</div></div>
+            </div>
+            <div class="devices" id="devices"></div>
+        </div>
+    </div>
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AkfycbxSKuzykjf4F4B7gZVXQQEKNTCfmTtBobgmTbcRLFkrWpCnTV4_p4Y6L2MYFNPVQw04EA/userlevel?contentType=application/json';
+        async function loadData() {
+            try {
+                const resp = await fetch(SCRIPT_URL);
+                const data = await resp.json();
+                if (Array.isArray(data)) {
+                    let upCount = 0, downCount = 0, html = '';
+                    data.forEach(host => {
+                        const isUp = host.disabled === false;
+                        if (isUp) upCount++; else downCount++;
+                        const status = isUp ? '🟢 UP' : '🔴 DOWN';
+                        const cls = isUp ? 'up' : 'down';
+                        html += `<div class="device-card"><div><span class="status-dot ${cls}"></span><div class="device-name">${host.comment || host.host || 'Unknown'}</div><div class="device-status-text ${cls}">${status}</div></div></div>`;
+                    });
+                    document.getElementById('totalCount').innerText = data.length;
+                    document.getElementById('upCount').innerText = upCount;
+                    document.getElementById('downCount').innerText = downCount;
+                    document.getElementById('devices').innerHTML = html;
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                }
+            } catch(e) { document.getElementById('loading').innerText = 'Error: ' + e.message; }
+        }
+        window.addEventListener('load', loadData);
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>

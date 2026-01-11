@@ -1,78 +1,202 @@
-50
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetWatch Dashboard</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; color: white; margin-bottom: 40px; }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .stat-value { font-size: 2em; font-weight: bold; color: #333; }
-        .stat-label { color: #666; margin-top: 5px; }
-        .stat-up { color: #27ae60; }
-        .stat-down { color: #e74c3c; }
-        .devices { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .device-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .device-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .status-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; margin-right: 10px; }
-        .status-dot.up { background-color: #27ae60; box-shadow: 0 0 10px #27ae60; }
-        .status-dot.down { background-color: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
-        .device-name { font-size: 1.3em; font-weight: bold; color: #333; }
-        .device-status-text { font-weight: bold; }
-        .device-status-text.up { color: #27ae60; }
-        .device-status-text.down { color: #e74c3c; }
-        .device-info { color: #666; font-size: 0.85em; margin-top: 10px; }
-        .loading { text-align: center; color: white; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netwatch Status Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .stat-box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .stat-box h3 {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+    }
+    .stat-box .number {
+      font-size: 2.5em;
+      font-weight: bold;
+    }
+    .stat-box.up .number { color: #4CAF50; }
+    .stat-box.down .number { color: #f44336; }
+    .stat-box.total .number { color: #667eea; }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    thead {
+      background: #333;
+      color: white;
+    }
+    th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    tbody tr:hover {
+      background: #f9f9f9;
+    }
+    .status-up {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+    .status-down {
+      color: #f44336;
+      font-weight: bold;
+    }
+    .icon {
+      font-size: 1.2em;
+      margin-right: 8px;
+    }
+    .comment {
+      color: #666;
+      font-size: 0.95em;
+    }
+    .update-time {
+      text-align: center;
+      color: white;
+      margin-top: 20px;
+      font-size: 0.9em;
+    }
+    .loading {
+      text-align: center;
+      color: white;
+      padding: 40px;
+      font-size: 1.2em;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>NetWatch Dashboard</h1>
-            <p>MikroTik Host Monitoring</p>
-        </div>
-        <div id="loading" class="loading">Loading...</div>
-        <div id="content" style="display: none;">
-            <div class="stats">
-                <div class="stat-card"><div class="stat-value"><span id="totalCount">0</span></div><div class="stat-label">Total Host</div></div>
-                <div class="stat-card"><div class="stat-value stat-up"><span id="upCount">0</span></div><div class="stat-label">Host UP</div></div>
-                <div class="stat-card"><div class="stat-value stat-down"><span id="downCount">0</span></div><div class="stat-label">Host DOWN</div></div>
-            </div>
-            <div class="devices" id="devices"></div>
-        </div>
+  <div class="container">
+    <h1>🌐 Netwatch Status</h1>
+    
+    <div class="stats">
+      <div class="stat-box up">
+        <h3>UP</h3>
+        <div class="number" id="upCount">0</div>
+      </div>
+      <div class="stat-box down">
+        <h3>DOWN</h3>
+        <div class="number" id="downCount">0</div>
+      </div>
     </div>
-    <script>
-        const const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5KuZykjf4F4B7gZVXQQEKNTCfmTtBobgmTbcRLFkrWpCnTV4_p4Y6L2MYFNPVQw04EA/exec' = 'https://script.google.com/macros/s/AkfycbxSKuzykjf4F4B7gZVXQQEKNTCfmTtBobgmTbcRLFkrWpCnTV4_p4Y6L2MYFNPVQw04EA/exec';
-        async function loadData() {
-            try {
-                const resp = await fetch(const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5KuZykjf4F4B7gZVXQQEKNTCfmTtBobgmTbcRLFkrWpCnTV4_p4Y6L2MYFNPVQw04EA/exec');
-                const data = await resp.json();
-                if (Array.isArray(data)) {
-                    let upCount = 0, downCount = 0, html = '';
-                    data.forEach(host => {
-                        const isUp = host.disabled === false;
-                        if (isUp) upCount++; else downCount++;
-                        const status = isUp ? '🟢 UP' : '🔴 DOWN';
-                        const cls = isUp ? 'up' : 'down';
-                        html += `<div class="device-card"><div><span class="status-dot ${cls}"></span><div class="device-name">${host.comment || host.host || 'Unknown'}</div><div class="device-status-text ${cls}">${status}</div></div></div>`;
-                    });
-                    document.getElementById('totalCount').innerText = data.length;
-                    document.getElementById('upCount').innerText = upCount;
-                    document.getElementById('downCount').innerText = downCount;
-                    document.getElementById('devices').innerHTML = html;
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content').style.display = 'block';
-                }
-            } catch(e) { document.getElementById('loading').innerText = 'Error: ' + e.message; }
-        }
-        window.addEventListener('load', loadData);
-        setInterval(loadData, 30000);
-    </script>
+
+    <table id="statusTable">
+      <thead>
+        <tr>
+          <th>Host</th>
+          <th>Comment</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="statusBody">
+        <tr>
+          <td colspan="3" class="loading">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="update-time">
+      Last updated: <span id="updateTime">-</span>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw9lUXVSmgd6CUVd3skReCvcEkEMe-B1v50eF7uDjWQidQKRE_c_jVECUSjB4TP_0f7/exec';
+
+    async function loadStatus() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        updateTable(data);
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('statusBody').innerHTML = 
+          '<tr><td colspan="3" style="color: red; text-align: center;">Gagal mengambil data</td></tr>';
+      }
+    }
+
+    function updateTable(data) {
+      const tbody = document.getElementById('statusBody');
+      tbody.innerHTML = '';
+      
+      let upCount = 0, downCount = 0;
+      
+      data.forEach(item => {
+        const isUp = item.status === 'up';
+        if (isUp) upCount++;
+        else downCount++;
+        
+        const tr = tbody.insertRow();
+        tr.innerHTML = `
+          <td><strong>${item.host}</strong></td>
+          <td class="comment">${item.comment || '-'}</td>
+          <td class="${isUp ? 'status-up' : 'status-down'}">
+            <span class="icon">${isUp ? '🟢' : '🔴'}</span>
+            ${isUp ? 'UP' : 'DOWN'}
+          </td>
+        `;
+      });
+      
+      document.getElementById('upCount').textContent = upCount;
+      document.getElementById('downCount').textContent = downCount;
+      document.getElementById('updateTime').textContent = 
+        new Date().toLocaleString('id-ID', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+    }
+
+    // Load pertama kali
+    loadStatus();
+    
+    // Auto refresh tiap 10 detik
+    setInterval(loadStatus, 10000);
+  </script>
 </body>
 </html>

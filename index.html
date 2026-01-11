@@ -10,16 +10,19 @@
       padding: 0;
       box-sizing: border-box;
     }
+    
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 20px;
     }
+    
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
     }
+    
     h1 {
       color: white;
       text-align: center;
@@ -27,12 +30,14 @@
       font-size: 2.5em;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
+    
     .stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 15px;
       margin-bottom: 30px;
     }
+    
     .stat-box {
       background: white;
       padding: 20px;
@@ -40,18 +45,25 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       text-align: center;
     }
+    
     .stat-box h3 {
       color: #666;
       font-size: 0.9em;
       margin-bottom: 10px;
     }
+    
     .stat-box .number {
       font-size: 2.5em;
       font-weight: bold;
     }
-    .stat-box.up .number { color: #4CAF50; }
-    .stat-box.down .number { color: #f44336; }
-    .stat-box.total .number { color: #667eea; }
+    
+    .stat-box.up .number {
+      color: #4CAF50;
+    }
+    
+    .stat-box.down .number {
+      color: #f44336;
+    }
     
     table {
       width: 100%;
@@ -61,49 +73,90 @@
       overflow: hidden;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
+    
     thead {
       background: #333;
       color: white;
     }
+    
     th {
       padding: 15px;
       text-align: left;
       font-weight: 600;
+      border-right: 1px solid #555;
     }
+    
+    th:last-child {
+      border-right: none;
+    }
+    
     td {
       padding: 15px;
       border-bottom: 1px solid #eee;
+      border-right: 1px solid #eee;
     }
+    
+    td:last-child {
+      border-right: none;
+    }
+    
     tbody tr:hover {
       background: #f9f9f9;
     }
+    
     .status-up {
       color: #4CAF50;
       font-weight: bold;
     }
+    
     .status-down {
       color: #f44336;
       font-weight: bold;
     }
+    
     .icon {
       font-size: 1.2em;
       margin-right: 8px;
     }
+    
     .comment {
-      color: #666;
+      color: #333;
       font-size: 0.95em;
+      font-weight: 500;
     }
+    
+    .timestamp {
+      color: #999;
+      font-size: 0.85em;
+    }
+    
     .update-time {
       text-align: center;
       color: white;
       margin-top: 20px;
       font-size: 0.9em;
     }
+    
     .loading {
       text-align: center;
       color: white;
       padding: 40px;
       font-size: 1.2em;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8em;
+      }
+      
+      th, td {
+        padding: 10px;
+        font-size: 0.9em;
+      }
+      
+      .stat-box .number {
+        font-size: 2em;
+      }
     }
   </style>
 </head>
@@ -127,17 +180,18 @@
         <tr>
           <th>Comment</th>
           <th>Status</th>
+          <th>Waktu Terakhir Update</th>
         </tr>
       </thead>
       <tbody id="statusBody">
         <tr>
-          <td colspan="2" class="loading">Loading...</td>
+          <td colspan="3" class="loading">Loading...</td>
         </tr>
       </tbody>
     </table>
 
     <div class="update-time">
-      Last updated: <span id="updateTime">-</span>
+      Last checked: <span id="updateTime">-</span>
     </div>
   </div>
 
@@ -152,7 +206,7 @@
       } catch (error) {
         console.error('Error:', error);
         document.getElementById('statusBody').innerHTML = 
-          '<tr><td colspan="2" style="color: red; text-align: center;">Gagal mengambil data</td></tr>';
+          '<tr><td colspan="3" style="color: red; text-align: center;">Gagal mengambil data</td></tr>';
       }
     }
 
@@ -174,6 +228,7 @@
             <span class="icon">${isUp ? '🟢' : '🔴'}</span>
             ${isUp ? 'UP' : 'DOWN'}
           </td>
+          <td class="timestamp">${item.timestamp || 'N/A'}</td>
         `;
       });
       
@@ -190,10 +245,7 @@
         });
     }
 
-    // Load pertama kali
     loadStatus();
-    
-    // Auto refresh tiap 10 detik
     setInterval(loadStatus, 10000);
   </script>
 </body>

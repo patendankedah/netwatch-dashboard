@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Netwatch Status Dashboard</title>
+  <title>BACOK WIFI</title>
   <style>
     * {
       margin: 0;
@@ -109,7 +109,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>🌐 Netwatch Status</h1>
+    <h1>🌐 BACOK WIFI</h1>
     
     <div class="stats">
       <div class="stat-box up">
@@ -125,14 +125,13 @@
     <table id="statusTable">
       <thead>
         <tr>
-          <th>Host</th>
           <th>Comment</th>
           <th>Status</th>
         </tr>
       </thead>
       <tbody id="statusBody">
         <tr>
-          <td colspan="3" class="loading">Loading...</td>
+          <td colspan="2" class="loading">Loading...</td>
         </tr>
       </tbody>
     </table>
@@ -153,7 +152,7 @@
       } catch (error) {
         console.error('Error:', error);
         document.getElementById('statusBody').innerHTML = 
-          '<tr><td colspan="3" style="color: red; text-align: center;">Gagal mengambil data</td></tr>';
+          '<tr><td colspan="2" style="color: red; text-align: center;">Gagal mengambil data</td></tr>';
       }
     }
 
@@ -170,8 +169,7 @@
         
         const tr = tbody.insertRow();
         tr.innerHTML = `
-          <td><strong>${item.host}</strong></td>
-          <td class="comment">${item.comment || '-'}</td>
+          <td class="comment"><strong>${item.comment || '-'}</strong></td>
           <td class="${isUp ? 'status-up' : 'status-down'}">
             <span class="icon">${isUp ? '🟢' : '🔴'}</span>
             ${isUp ? 'UP' : 'DOWN'}

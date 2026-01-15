@@ -1,241 +1,225 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BACOK WIFI</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
-    }
-    
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    
-    h1 {
-      color: white;
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 2.5em;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-    
-    .stat-box {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-    
-    .stat-box h3 {
-      color: #666;
-      font-size: 0.9em;
-      margin-bottom: 10px;
-    }
-    
-    .stat-box .number {
-      font-size: 2.5em;
-      font-weight: bold;
-    }
-    
-    .stat-box.up .number {
-      color: #4CAF50;
-    }
-    
-    .stat-box.down .number {
-      color: #f44336;
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    
-    thead {
-      background: #333;
-      color: white;
-    }
-    
-    th {
-      padding: 15px;
-      text-align: left;
-      font-weight: 600;
-      border-right: 1px solid #555;
-    }
-    
-    th:last-child {
-      border-right: none;
-    }
-    
-    td {
-      padding: 15px;
-      border-bottom: 1px solid #eee;
-      border-right: 1px solid #eee;
-    }
-    
-    td:last-child {
-      border-right: none;
-    }
-    
-    tbody tr:hover {
-      background: #f9f9f9;
-    }
-    
-    .status-icon {
-      font-size: 1.5em;
-      text-align: center;
-    }
-    
-    .comment {
-      color: #333;
-      font-size: 0.95em;
-      font-weight: 500;
-    }
-    
-    .timestamp {
-      color: #999;
-      font-size: 0.85em;
-    }
-    
-    .update-time {
-      text-align: center;
-      color: white;
-      margin-top: 20px;
-      font-size: 0.9em;
-    }
-    
-    .loading {
-      text-align: center;
-      color: white;
-      padding: 40px;
-      font-size: 1.2em;
-    }
-    
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8em;
-      }
-      
-      th, td {
-        padding: 10px;
-        font-size: 0.9em;
-      }
-      
-      .stat-box .number {
-        font-size: 2em;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>BACOK WIFI - TV MODE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+}
+
+.container {
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 34px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #222;
+  padding: 14px;
+  text-align: left;
+  font-size: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+td {
+  padding: 14px;
+  font-size: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.status {
+  text-align: center;
+}
+
+/* status dot */
+.dot {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+
+.dot.up {
+  background: #00ff00;
+}
+
+.dot.down {
+  background: #ff3333;
+  animation: blink 1s infinite;
+}
+
+/* highlight row */
+tr.down-row {
+  background: #3a0000;
+}
+
+tr.parent-down {
+  background: #332800;
+}
+
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
+
+.footer {
+  text-align: center;
+  margin-top: 15px;
+  color: #aaa;
+  font-size: 14px;
+}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>🌐 BACOK WIFI</h1>
-    
-    <div class="stats">
-      <div class="stat-box up">
-        <h3>UP</h3>
-        <div class="number" id="upCount">0</div>
-      </div>
-      <div class="stat-box down">
-        <h3>DOWN</h3>
-        <div class="number" id="downCount">0</div>
-      </div>
-    </div>
+<div class="container">
+  <h1>📡 BACOK WIFI – MONITORING</h1>
 
-    <table id="statusTable">
-      <thead>
-        <tr>
-          <th>Comment</th>
-          <th>Status</th>
-          <th>Waktu Terakhir Update</th>
-        </tr>
-      </thead>
-      <tbody id="statusBody">
-        <tr>
-          <td colspan="3" class="loading">Loading...</td>
-        </tr>
-      </tbody>
-    </table>
+  <table>
+    <thead>
+      <tr>
+        <th>Node</th>
+        <th>Status</th>
+        <th>Update</th>
+      </tr>
+    </thead>
+    <tbody id="statusBody">
+      <tr><td colspan="3">Loading...</td></tr>
+    </tbody>
+  </table>
 
-    <div class="update-time">
-      Last checked: <span id="updateTime">-</span>
-    </div>
+  <div class="footer">
+    Auto refresh 10 detik • TV Mode • Double click = Fullscreen
   </div>
+</div>
 
-  <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw9lUXVSmgd6CUVd3skReCvcEkEMe-B1v50eF7uDjWQidQKRE_c_jVECUSjB4TP_0f7/exec';
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwhIhaKNpLZTbDYA0CkniiPjnHbJwPAu3W2q7DrxlOV7MvRIRNPD-HjbV8McSTxIC9v/exec";
 
-    async function loadStatus() {
-      try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        updateTable(data);
-      } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('statusBody').innerHTML = 
-          '<tr><td colspan="3" style="color: red; text-align: center;">Gagal mengambil data</td></tr>';
+let downParents = new Set();
+
+/* format waktu tanpa detik */
+function formatTime(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return d.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    renderTree(data);
+  } catch (e) {
+    document.getElementById("statusBody").innerHTML =
+      "<tr><td colspan='3' style='color:red'>Gagal ambil data</td></tr>";
+  }
+}
+
+function renderTree(data) {
+  const tbody = document.getElementById("statusBody");
+  tbody.innerHTML = "";
+  downParents.clear();
+
+  const nodes = {};
+
+  /* build node map (case-insensitive) */
+  data.forEach(d => {
+    const key = d.comment.trim().toLowerCase();
+    nodes[key] = {
+      key,
+      name: d.comment.trim(),
+      parent: (d.parent || "-").trim().toLowerCase(),
+      status: d.status,
+      time: d.updated_at,
+      children: []
+    };
+  });
+
+  /* build hierarchy + detect DOWN parent */
+  Object.values(nodes).forEach(n => {
+    if (n.parent !== "-" && nodes[n.parent]) {
+      nodes[n.parent].children.push(n);
+      if (n.status === "down") {
+        downParents.add(n.parent);
       }
     }
+  });
 
-    function updateTable(data) {
-      const tbody = document.getElementById('statusBody');
-      tbody.innerHTML = '';
-      
-      let upCount = 0, downCount = 0;
-      
-      data.forEach(item => {
-        const isUp = item.status === 'up';
-        if (isUp) upCount++;
-        else downCount++;
-        
-        const tr = tbody.insertRow();
-        tr.innerHTML = `
-          <td class="comment"><strong>${item.comment || '-'}</strong></td>
-          <td class="status-icon">
-            ${isUp ? '🟢' : '🔴'}
-          </td>
-          <td class="timestamp">${item.timestamp || 'N/A'}</td>
-        `;
-      });
-      
-      document.getElementById('upCount').textContent = upCount;
-      document.getElementById('downCount').textContent = downCount;
-      document.getElementById('updateTime').textContent = 
-        new Date().toLocaleString('id-ID', { 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          second: '2-digit',
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-    }
+  /* render root */
+  Object.values(nodes)
+    .filter(n => n.parent === "-")
+    .forEach(n => drawNode(n, 0, tbody));
+}
 
-    loadStatus();
-    setInterval(loadStatus, 10000);
-  </script>
+function drawNode(node, level, tbody) {
+  const tr = document.createElement("tr");
+
+  if (node.status === "down") tr.classList.add("down-row");
+  if (downParents.has(node.key)) tr.classList.add("parent-down");
+
+  tr.innerHTML = `
+    <td style="padding-left:${level * 30}px">${node.name}</td>
+    <td class="status">
+      <span class="dot ${node.status === "up" ? "up" : "down"}"></span>
+    </td>
+    <td>${formatTime(node.time)}</td>
+  `;
+
+  tbody.appendChild(tr);
+
+  node.children.forEach(c => drawNode(c, level + 1, tbody));
+}
+
+/* auto refresh */
+loadData();
+setInterval(loadData, 10000);
+
+/* fullscreen */
+document.addEventListener("dblclick", () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  }
+});
+
+/* auto scroll TV */
+let direction = 1;
+setInterval(() => {
+  window.scrollBy(0, direction);
+  if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 5) {
+    direction = -1;
+  }
+  if (window.scrollY <= 0) {
+    direction = 1;
+  }
+}, 40);
+</script>
 </body>
 </html>

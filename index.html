@@ -6,16 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background: #000;
   color: #fff;
-  overflow: hidden;
 }
 
 .container {
@@ -24,8 +19,36 @@ body {
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
   font-size: 34px;
+  margin-bottom: 10px;
+}
+
+.server-select {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+}
+
+.server-select button,
+.back-btn {
+  font-size: 20px;
+  padding: 12px 25px;
+  background: #222;
+  color: #fff;
+  border: 2px solid #444;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.server-select button:hover,
+.back-btn:hover {
+  background: #444;
+}
+
+.back-btn {
+  display: none;
+  margin-bottom: 15px;
 }
 
 table {
@@ -34,53 +57,48 @@ table {
 }
 
 th {
-  background: #222;
-  padding: 14px;
-  text-align: left;
+  background: #111;
+  padding: 16px;
   font-size: 20px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 td {
   padding: 14px;
   font-size: 20px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #222;
 }
 
 .status {
   text-align: center;
 }
 
-/* status dot */
 .dot {
   display: inline-block;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
 }
 
-.dot.up {
-  background: #00ff00;
-}
-
-.dot.down {
+.up { background: #00ff00; }
+.down {
   background: #ff3333;
   animation: blink 1s infinite;
 }
 
-/* highlight row */
-tr.down-row {
-  background: #3a0000;
-}
-
-tr.parent-down {
-  background: #332800;
-}
-
 @keyframes blink {
-  50% { opacity: 0.4; }
+  50% { opacity: 0.3; }
+}
+
+tbody {
+  display: block;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+thead, tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .footer {
@@ -96,7 +114,20 @@ tr.parent-down {
 <div class="container">
   <h1>📡 BACOK WIFI – MONITORING</h1>
 
-  <table>
+  <!-- PILIH SERVER -->
+  <div class="server-select" id="serverSelect">
+    <button onclick="selectServer('Sheet1')">OK 1</button>
+    <button onclick="selectServer('Sheet2')">SERVER 2</button>
+    <button onclick="selectServer('Sheet3')">SERVER 3</button>
+    <button onclick="selectServer('Sheet4')">SERVER 4</button>
+	<button onclick="selectServer('Sheet5')">SERVER 5</button>
+  </div>
+
+  <!-- BACK -->
+  <button class="back-btn" id="backBtn" onclick="backToMenu()">⬅ Kembali pilih server</button>
+
+  <!-- TABLE -->
+  <table id="dataTable" style="display:none">
     <thead>
       <tr>
         <th>Node</th>
@@ -110,116 +141,99 @@ tr.parent-down {
   </table>
 
   <div class="footer">
-    Auto refresh 10 detik • TV Mode • Double click = Fullscreen
+    Auto refresh 10 detik • TV Mode
   </div>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwhIhaKNpLZTbDYA0CkniiPjnHbJwPAu3W2q7DrxlOV7MvRIRNPD-HjbV8McSTxIC9v/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbxWdDlnie9XwxUaokH3t2_ZkE9pi988yWhSu6oD2daqslDeFOLD2sWYjCOqElojvYqt/exec";
 
-let downParents = new Set();
+let currentSheet = null;
+let refreshTimer = null;
+let scrollTimer = null;
 
-/* format waktu tanpa detik */
-function formatTime(iso) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  return d.toLocaleString("id-ID", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+function selectServer(sheet) {
+  currentSheet = sheet;
+
+  document.getElementById("serverSelect").style.display = "none";
+  document.getElementById("dataTable").style.display = "table";
+  document.getElementById("backBtn").style.display = "inline-block";
+
+  loadData();
+  refreshTimer = setInterval(loadData, 10000);
+}
+
+function backToMenu() {
+  currentSheet = null;
+
+  clearInterval(refreshTimer);
+  clearInterval(scrollTimer);
+
+  document.getElementById("serverSelect").style.display = "flex";
+  document.getElementById("dataTable").style.display = "none";
+  document.getElementById("backBtn").style.display = "none";
+
+  document.getElementById("statusBody").innerHTML =
+    "<tr><td colspan='3'>Pilih server di atas</td></tr>";
 }
 
 async function loadData() {
+  if (!currentSheet) return;
+
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_BASE}?sheet=${currentSheet}`);
     const data = await res.json();
-    renderTree(data);
-  } catch (e) {
+    renderTable(data);
+  } catch {
     document.getElementById("statusBody").innerHTML =
       "<tr><td colspan='3' style='color:red'>Gagal ambil data</td></tr>";
   }
 }
 
-function renderTree(data) {
+function renderTable(data) {
   const tbody = document.getElementById("statusBody");
   tbody.innerHTML = "";
-  downParents.clear();
 
-  const nodes = {};
-
-  /* build node map (case-insensitive) */
   data.forEach(d => {
-    const key = d.comment.trim().toLowerCase();
-    nodes[key] = {
-      key,
-      name: d.comment.trim(),
-      parent: (d.parent || "-").trim().toLowerCase(),
-      status: d.status,
-      time: d.updated_at,
-      children: []
-    };
+    const date = d.updated_at
+      ? new Date(d.updated_at).toLocaleString("id-ID", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      : "-";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${d.comment}</td>
+      <td class="status">
+        <span class="dot ${d.status === 'up' ? 'up' : 'down'}"></span>
+      </td>
+      <td>${date}</td>
+    `;
+    tbody.appendChild(tr);
   });
 
-  /* build hierarchy + detect DOWN parent */
-  Object.values(nodes).forEach(n => {
-    if (n.parent !== "-" && nodes[n.parent]) {
-      nodes[n.parent].children.push(n);
-      if (n.status === "down") {
-        downParents.add(n.parent);
-      }
+  // auto scroll
+  let pos = 0;
+  clearInterval(scrollTimer);
+  scrollTimer = setInterval(() => {
+    pos += 1;
+    tbody.scrollTop = pos;
+    if (tbody.scrollTop + tbody.clientHeight >= tbody.scrollHeight) {
+      pos = 0;
     }
-  });
-
-  /* render root */
-  Object.values(nodes)
-    .filter(n => n.parent === "-")
-    .forEach(n => drawNode(n, 0, tbody));
+  }, 80);
 }
 
-function drawNode(node, level, tbody) {
-  const tr = document.createElement("tr");
-
-  if (node.status === "down") tr.classList.add("down-row");
-  if (downParents.has(node.key)) tr.classList.add("parent-down");
-
-  tr.innerHTML = `
-    <td style="padding-left:${level * 30}px">${node.name}</td>
-    <td class="status">
-      <span class="dot ${node.status === "up" ? "up" : "down"}"></span>
-    </td>
-    <td>${formatTime(node.time)}</td>
-  `;
-
-  tbody.appendChild(tr);
-
-  node.children.forEach(c => drawNode(c, level + 1, tbody));
-}
-
-/* auto refresh */
-loadData();
-setInterval(loadData, 10000);
-
-/* fullscreen */
+// double click fullscreen
 document.addEventListener("dblclick", () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
   }
 });
-
-/* auto scroll TV */
-let direction = 1;
-setInterval(() => {
-  window.scrollBy(0, direction);
-  if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 5) {
-    direction = -1;
-  }
-  if (window.scrollY <= 0) {
-    direction = 1;
-  }
-}, 40);
 </script>
 </body>
 </html>

@@ -1,1 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>P.GEMILANG - MONITORING</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #000;
+  color: #fff;
+}
+
+.container {
+  padding: 15px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+/* SERVER BUTTONS */
+.server-select {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.server-select button,
+.back-btn {
+  padding: 14px;
+  font-size: 18px;
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.server-select button:hover,
+.back-btn:hover {
+  background: #444;
+}
+
+.back-btn {
+  display: none;
+  margin-bottom: 10px;
+}
+
+/* TABLE */
+.table-wrapper {
+  width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;   /* ikut lebar layar, tidak min-width 850 lagi */
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #222;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+th {
+  background: #111;
+}
+
+.status {
+  text-align: center;
+  width: 80px;   /* bikin kolom status kecil */
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.up { background: #00ff00; }
+.down { background: #ff3333; }
+
+.footer {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* INDENT LEVEL */
+.level-0 td.node {
+  padding-left: 0px;
+  font-weight: bold;
+}
+
+.level-1 td.node { padding-left: 25px; }
+.level-2 td.node { padding-left: 50px; }
+.level-3 td.node { padding-left: 75px; }
+.level-4 td.node { padding-left: 100px; }
+
+/* MOBILE ADJUST */
+@media (max-width: 768px) {
+  h1 { font-size: 24px; }
+  th, td { font-size: 14px; padding: 10px; }
+  .server-select button,
+  .back-btn { font-size: 16px; padding: 12px; }
+
+  /* kalau nama node panjang, potong dengan ellipsis */
+  .node {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>📡 P.GEMILANG – MONITORING</h1>
+
+  <!-- SERVER CHOICE -->
+  <div class="server-select" id="serverSelect">
+    <button onclick="selectServer('Sheet3')">SUBAH</button>
+  </div>
+
+  <!-- BACK BUTTON -->
+  <button class="back-btn" id="backBtn" onclick="backToMenu()">⬅ Kembali</button>
+
+  <!-- TABLE -->
+  <div class="table-wrapper">
+    <table id="dataTable" style="display:none">
+      <thead>
+        <tr>
+          <th>Node</th>
+          <th class="status">Status</th>
+        </tr>
+      </thead>
+      <tbody id="statusBody">
+        <tr><td colspan="2">Pilih server di atas</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    Monitoring 2 kolom (Node & Status)
+  </div>
+</div>
+
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbxWdDlnie9XwxUaokH3t2_ZkE9pi988yWhSu6oD2daqslDeFOLD2sWYjCOqElojvYqt/exec";
+let currentSheet = null;
+let refreshTimer = null;
+
+/* pilih server */
+function selectServer(sheet) {
+  currentSheet = sheet;
+  document.getElementById("serverSelect").style.display = "none";
+  document.getElementById("dataTable").style.display = "table";
+  document.getElementById("backBtn").style.display = "block";
+
+  loadData();
+  refreshTimer = setInterval(loadData, 10000);
+}
+
+/* kembali ke menu */
+function backToMenu() {
+  clearInterval(refreshTimer);
+  currentSheet = null;
+
+  document.getElementById("serverSelect").style.display = "flex";
+  document.getElementById("dataTable").style.display = "none";
+  document.getElementById("backBtn").style.display = "none";
+
+  document.getElementById("statusBody").innerHTML =
+    "<tr><td colspan='2'>Pilih server di atas</td></tr>";
+}
+
+/* hitung level indent */
+function getLevel(item, all) {
+  let level = 0;
+  let parent = item.parent;
+  while (parent && parent !== '-') {
+    const p = all.find(d => d.comment === parent);
+    if (!p) break;
+    level++;
+    parent = p.parent;
+  }
+  return level;
+}
+
+/* ambil & render data */
+async function loadData() {
+  if (!currentSheet) return;
+
+  try {
+    const res = await fetch(`${API_BASE}?sheet=${currentSheet}`);
+    const data = await res.json();
+    renderTable(data);
+  } catch {
+    document.getElementById("statusBody").innerHTML =
+      "<tr><td colspan='2' style='color:red'>Gagal ambil data</td></tr>";
+  }
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById("statusBody");
+  tbody.innerHTML = "";
+
+  data.forEach(d => {
+    const level = getLevel(d, data);
+
+    const tr = document.createElement("tr");
+    tr.className = "level-" + level;
+
+    tr.innerHTML = `
+      <td class="node">${d.comment}</td>
+      <td class="status">
+        <span class="dot ${d.status === 'up' ? 'up' : 'down'}"></span>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>

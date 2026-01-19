@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>BACOK WIFI - MONITORING</title>
+<title>001 - MONITOR</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -52,15 +53,14 @@ h1 {
   margin-bottom: 10px;
 }
 
-/* TABLE & SCROLL */
+/* TABLE */
 .table-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  width: 100%;
 }
 
 table {
   border-collapse: collapse;
-  min-width: 850px; /* cukup untuk indent + kolom */
+  width: 100%;   /* ikut lebar layar, tidak min-width 850 lagi */
 }
 
 th, td {
@@ -76,6 +76,7 @@ th {
 
 .status {
   text-align: center;
+  width: 80px;   /* bikin kolom status kecil */
 }
 
 .dot {
@@ -112,21 +113,25 @@ th {
   th, td { font-size: 14px; padding: 10px; }
   .server-select button,
   .back-btn { font-size: 16px; padding: 12px; }
+
+  /* kalau nama node panjang, potong dengan ellipsis */
+  .node {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>
 </head>
 
 <body>
 <div class="container">
-  <h1>📡 BACOK WIFI – MONITORING</h1>
+  <h1>📡 UCOK – MONITOR</h1>
 
   <!-- SERVER CHOICE -->
   <div class="server-select" id="serverSelect">
+    <button onclick="selectServer('Sheet2')">NG HotSpot</button>
     
-    <button onclick="selectServer('Sheet2')">NG_HotSpot</button>
-    
-    
-	
   </div>
 
   <!-- BACK BUTTON -->
@@ -138,18 +143,17 @@ th {
       <thead>
         <tr>
           <th>Node</th>
-          <th>Status</th>
-          <th>Update</th>
+          <th class="status">Status</th>
         </tr>
       </thead>
       <tbody id="statusBody">
-        <tr><td colspan="3">Pilih server di atas</td></tr>
+        <tr><td colspan="2">Pilih server di atas</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="footer">
-    Geser ke kanan untuk melihat tabel
+    Monitoring 2 kolom (Node & Status)
   </div>
 </div>
 
@@ -179,7 +183,7 @@ function backToMenu() {
   document.getElementById("backBtn").style.display = "none";
 
   document.getElementById("statusBody").innerHTML =
-    "<tr><td colspan='3'>Pilih server di atas</td></tr>";
+    "<tr><td colspan='2'>Pilih server di atas</td></tr>";
 }
 
 /* hitung level indent */
@@ -205,7 +209,7 @@ async function loadData() {
     renderTable(data);
   } catch {
     document.getElementById("statusBody").innerHTML =
-      "<tr><td colspan='3' style='color:red'>Gagal ambil data</td></tr>";
+      "<tr><td colspan='2' style='color:red'>Gagal ambil data</td></tr>";
   }
 }
 
@@ -215,12 +219,6 @@ function renderTable(data) {
 
   data.forEach(d => {
     const level = getLevel(d, data);
-    const date = d.updated_at
-      ? new Date(d.updated_at).toLocaleString("id-ID", {
-          year: "numeric", month: "2-digit", day: "2-digit",
-          hour: "2-digit", minute: "2-digit"
-        })
-      : "-";
 
     const tr = document.createElement("tr");
     tr.className = "level-" + level;
@@ -230,7 +228,6 @@ function renderTable(data) {
       <td class="status">
         <span class="dot ${d.status === 'up' ? 'up' : 'down'}"></span>
       </td>
-      <td>${date}</td>
     `;
 
     tbody.appendChild(tr);
@@ -239,4 +236,3 @@ function renderTable(data) {
 </script>
 </body>
 </html>
-

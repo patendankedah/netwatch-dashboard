@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -53,6 +52,15 @@ h1 {
   margin-bottom: 10px;
 }
 
+/* SUMMARY */
+#summary {
+  display: none;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
 /* TABLE */
 .table-wrapper {
   width: 100%;
@@ -60,7 +68,7 @@ h1 {
 
 table {
   border-collapse: collapse;
-  width: 100%;   /* ikut lebar layar, tidak min-width 850 lagi */
+  width: 100%;
 }
 
 th, td {
@@ -76,7 +84,7 @@ th {
 
 .status {
   text-align: center;
-  width: 80px;   /* bikin kolom status kecil */
+  width: 80px;
 }
 
 .dot {
@@ -97,24 +105,19 @@ th {
 }
 
 /* INDENT LEVEL */
-.level-0 td.node {
-  padding-left: 0px;
-  font-weight: bold;
-}
-
+.level-0 td.node { padding-left: 0px; font-weight: bold; }
 .level-1 td.node { padding-left: 25px; }
 .level-2 td.node { padding-left: 50px; }
 .level-3 td.node { padding-left: 75px; }
 .level-4 td.node { padding-left: 100px; }
 
-/* MOBILE ADJUST */
+/* MOBILE */
 @media (max-width: 768px) {
   h1 { font-size: 24px; }
   th, td { font-size: 14px; padding: 10px; }
   .server-select button,
   .back-btn { font-size: 16px; padding: 12px; }
 
-  /* kalau nama node panjang, potong dengan ellipsis */
   .node {
     max-width: 240px;
     overflow: hidden;
@@ -128,15 +131,21 @@ th {
 <div class="container">
   <h1>📡 TOR – MONITOR</h1>
 
-  <!-- SERVER CHOICE -->
+  <!-- SERVER MENU -->
   <div class="server-select" id="serverSelect">
     <button onclick="selectServer('Sheet4')">V1</button>
     <button onclick="selectServer('Sheet5')">V2</button>
     <button onclick="selectServer('Sheet6')">SEBATUK</button>
   </div>
 
-  <!-- BACK BUTTON -->
+  <!-- BACK -->
   <button class="back-btn" id="backBtn" onclick="backToMenu()">⬅ Kembali</button>
+
+  <!-- SUMMARY -->
+  <div id="summary">
+    🟢 UP: <span id="upCount">0</span> |
+    🔴 DOWN: <span id="downCount">0</span>
+  </div>
 
   <!-- TABLE -->
   <div class="table-wrapper">
@@ -154,7 +163,7 @@ th {
   </div>
 
   <div class="footer">
-    Monitoring 2 kolom (Node & Status)
+    Monitoring Node Mikrotik
   </div>
 </div>
 
@@ -163,18 +172,19 @@ const API_BASE = "https://script.google.com/macros/s/AKfycbxWdDlnie9XwxUaokH3t2_
 let currentSheet = null;
 let refreshTimer = null;
 
-/* pilih server */
+/* PILIH SERVER */
 function selectServer(sheet) {
   currentSheet = sheet;
   document.getElementById("serverSelect").style.display = "none";
   document.getElementById("dataTable").style.display = "table";
   document.getElementById("backBtn").style.display = "block";
+  document.getElementById("summary").style.display = "block";
 
   loadData();
   refreshTimer = setInterval(loadData, 10000);
 }
 
-/* kembali ke menu */
+/* KEMBALI */
 function backToMenu() {
   clearInterval(refreshTimer);
   currentSheet = null;
@@ -182,12 +192,13 @@ function backToMenu() {
   document.getElementById("serverSelect").style.display = "flex";
   document.getElementById("dataTable").style.display = "none";
   document.getElementById("backBtn").style.display = "none";
+  document.getElementById("summary").style.display = "none";
 
   document.getElementById("statusBody").innerHTML =
     "<tr><td colspan='2'>Pilih server di atas</td></tr>";
 }
 
-/* hitung level indent */
+/* HITUNG LEVEL */
 function getLevel(item, all) {
   let level = 0;
   let parent = item.parent;
@@ -200,7 +211,7 @@ function getLevel(item, all) {
   return level;
 }
 
-/* ambil & render data */
+/* LOAD DATA */
 async function loadData() {
   if (!currentSheet) return;
 
@@ -214,11 +225,18 @@ async function loadData() {
   }
 }
 
+/* RENDER TABLE + COUNT */
 function renderTable(data) {
   const tbody = document.getElementById("statusBody");
   tbody.innerHTML = "";
 
+  let up = 0;
+  let down = 0;
+
   data.forEach(d => {
+    if (d.status === "up") up++;
+    else down++;
+
     const level = getLevel(d, data);
 
     const tr = document.createElement("tr");
@@ -233,6 +251,9 @@ function renderTable(data) {
 
     tbody.appendChild(tr);
   });
+
+  document.getElementById("upCount").innerText = up;
+  document.getElementById("downCount").innerText = down;
 }
 </script>
 </body>

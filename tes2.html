@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netwatch Mobile</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+/* ===== COMMON ===== */
+.hidden { display: none; }
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: #020617;
+  border: 1px solid #334155;
+  color: #e5e7eb;
+  border-radius: 12px;
+  font-size: 16px;
+}
+button:active {
+  background: #020617;
+}
+
+/* ===== MENU ===== */
+.menu {
+  padding: 20px;
+}
+.menu h2 {
+  margin-bottom: 16px;
+}
+.menu button {
+  margin-bottom: 12px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.back {
+  font-size: 18px;
+  background: none;
+  border: none;
+  color: #e5e7eb;
+  width: auto;
+  padding: 0;
+}
+.header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* ===== SUMMARY ===== */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+.sum-box {
+  background: #020617;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+/* ===== LIST ===== */
+.list {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  background: #020617;
+  border-radius: 12px;
+  padding: 12px;
+  border-left: 4px solid transparent;
+}
+.card.up { border-color: #22c55e; }
+.card.down { border-color: #ef4444; }
+
+.row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ip {
+  font-weight: 600;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.dot.up { background: #22c55e; }
+.dot.down { background: #ef4444; }
+
+.meta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 4px 0 8px;
+}
+
+textarea {
+  width: 100%;
+  background: #020617;
+  border: 1px solid #334155;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+  resize: none;
+  min-height: 42px;
+}
+textarea:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== MENU PILIH SHEET ===== -->
+<div id="menu" class="menu">
+  <h2>📡 Pilih Lokasi Monitoring</h2>
+
+  <button onclick="openSheet('BUMDES')">BUMDES</button>
+
+  <!-- NANTI TINGGAL TAMBAH -->
+  <!-- <button onclick="openSheet('KANTOR')">KANTOR</button> -->
+  <!-- <button onclick="openSheet('GUDANG')">GUDANG</button> -->
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard" class="hidden">
+
+  <div class="header">
+    <button class="back" onclick="backMenu()">⬅</button>
+    <h2 id="title">Monitoring</h2>
+  </div>
+
+  <div class="summary">
+    <div class="sum-box">🟢 UP: <b id="upCount">0</b></div>
+    <div class="sum-box">🔴 DOWN: <b id="downCount">0</b></div>
+  </div>
+
+  <div class="list" id="listData"></div>
+
+</div>
+
+<script>
+const SCRIPT_URL = "PASTE_URL_EXEC_DI_SINI";
+let CURRENT_SHEET = "";
+
+function openSheet(sheet) {
+  CURRENT_SHEET = sheet;
+  document.getElementById("title").innerText = sheet;
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  loadData();
+}
+
+function backMenu() {
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+  clearInterval(window.timer);
+}
+
+async function loadData() {
+  clearInterval(window.timer);
+  await fetchData();
+  window.timer = setInterval(fetchData, 10000);
+}
+
+async function fetchData() {
+  const res = await fetch(`${SCRIPT_URL}?mode=list&sheet=${CURRENT_SHEET}`);
+  const data = await res.json();
+
+  let up = 0, down = 0;
+  const list = document.getElementById("listData");
+  list.innerHTML = "";
+
+  data.slice(1).forEach(row => {
+    const ip = row[0];
+    const comment = row[2] || "";
+    const status = (row[4] || "UP").toUpperCase();
+    const last = row[5] ? new Date(row[5]).toLocaleTimeString("id-ID") : "-";
+
+    if (status === "UP") up++; else down++;
+
+    list.innerHTML += `
+      <div class="card ${status === "UP" ? "up" : "down"}">
+        <div class="row-top">
+          <div class="ip">${ip}</div>
+          <div class="dot ${status === "UP" ? "up" : "down"}"></div>
+        </div>
+        <div class="meta">Update: ${last}</div>
+        <textarea
+          placeholder="Catatan..."
+          onblur="saveComment('${ip}', this.value)">${comment}</textarea>
+      </div>
+    `;
+  });
+
+  document.getElementById("upCount").innerText = up;
+  document.getElementById("downCount").innerText = down;
+}
+
+function saveComment(ip, comment) {
+  fetch(`${SCRIPT_URL}?sheet=${CURRENT_SHEET}&ip=${ip}&comment=${encodeURIComponent(comment)}`);
+}
+</script>
+
+</body>
+</html>

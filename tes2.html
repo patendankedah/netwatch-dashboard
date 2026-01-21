@@ -52,7 +52,7 @@ button {
   flex: 1;
   background: #020617;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
 }
 
@@ -61,21 +61,21 @@ button {
   padding: 0 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 .card {
-  background: #020617;
-  border-radius: 12px;
-  padding: 12px;
+  background: linear-gradient(180deg, #020617, #020617);
+  border-radius: 14px;
+  padding: 14px;
   border-left: 4px solid transparent;
 }
 .card.up { border-color: #22c55e; }
 .card.down { border-color: #ef4444; }
 
-/* GRID ROW — FIX */
+/* GRID ROW */
 .row {
   display: grid;
-  grid-template-columns: 150px 24px 1fr;
+  grid-template-columns: 150px 22px 1fr;
   align-items: center;
   gap: 6px;
 }
@@ -92,9 +92,10 @@ button {
 .status {
   display: flex;
   justify-content: center;
+  transform: translateX(-6px); /* GESER KE KIRI */
 }
 
-/* STATUS DOT */
+/* DOT */
 .dot {
   width: 12px;
   height: 12px;
@@ -110,12 +111,13 @@ button {
   background: #020617;
   border: 1px solid #334155;
   color: #e5e7eb;
-  border-radius: 8px;
-  padding: 6px 8px;
+  border-radius: 10px;
+  padding: 6px 10px;
   font-size: 13px;
   resize: none;
 }
 
+/* META */
 .meta {
   font-size: 12px;
   color: #94a3b8;
@@ -182,7 +184,7 @@ async function fetchData() {
 
   data.slice(1).forEach(row => {
     const ip = row[0];
-    const comment = row[2] || "";
+    const comment = row[2] || "-";
     const status = (row[4] || "UP").toUpperCase();
     const time = row[5]
       ? new Date(row[5]).toLocaleTimeString("id-ID")
@@ -201,7 +203,6 @@ async function fetchData() {
 
           <textarea
             class="comment"
-            placeholder="Komentar..."
             onfocus="isTyping = true"
             onblur="isTyping = false; save('${ip}', this.value)"
           >${comment}</textarea>

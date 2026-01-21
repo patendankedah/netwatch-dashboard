@@ -72,20 +72,26 @@ button {
 .card.up { border-color: #22c55e; }
 .card.down { border-color: #ef4444; }
 
-/* ROW */
+/* GRID ROW */
 .row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-/* IP + STATUS */
-.left {
-  display: flex;
+  display: grid;
+  grid-template-columns: 160px 40px 1fr;
   align-items: center;
   gap: 8px;
-  width: 45%;
+}
+
+/* IP */
+.ip {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* STATUS */
+.status {
+  display: flex;
+  justify-content: center;
 }
 
 /* STATUS DOT */
@@ -97,9 +103,9 @@ button {
 .dot.up { background: #22c55e; }
 .dot.down { background: #ef4444; }
 
-/* COMMENT — SEJAJAR KOLOM DOWN */
+/* COMMENT */
 .comment {
-  width: 45%;
+  width: 100%;
   height: 36px;
   background: #020617;
   border: 1px solid #334155;
@@ -184,8 +190,9 @@ async function fetchData() {
     list.innerHTML += `
       <div class="card ${status === "UP" ? "up" : "down"}">
         <div class="row">
-          <div class="left">
-            <b>${ip}</b>
+          <div class="ip">${ip}</div>
+
+          <div class="status">
             <span class="dot ${status === "UP" ? "up" : "down"}"></span>
           </div>
 

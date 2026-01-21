@@ -12,8 +12,6 @@ body {
   background: #0f172a;
   color: #e5e7eb;
 }
-
-/* ===== COMMON ===== */
 .hidden { display: none; }
 
 button {
@@ -25,62 +23,46 @@ button {
   border-radius: 12px;
   font-size: 16px;
 }
-button:active {
-  background: #020617;
-}
 
-/* ===== MENU ===== */
-.menu {
-  padding: 20px;
-}
-.menu h2 {
-  margin-bottom: 16px;
-}
-.menu button {
-  margin-bottom: 12px;
-}
+/* MENU */
+.menu { padding: 20px; }
+.menu button { margin-bottom: 12px; }
 
-/* ===== HEADER ===== */
+/* HEADER */
 .header {
   padding: 16px;
   display: flex;
-  align-items: center;
   gap: 10px;
+  align-items: center;
 }
 .back {
-  font-size: 18px;
   background: none;
   border: none;
   color: #e5e7eb;
-  width: auto;
-  padding: 0;
-}
-.header h2 {
-  margin: 0;
   font-size: 18px;
 }
 
-/* ===== SUMMARY ===== */
+/* SUMMARY */
 .summary {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   padding: 0 16px 16px;
+  display: flex;
+  gap: 8px;
 }
-.sum-box {
+.sum {
+  flex: 1;
   background: #020617;
   padding: 12px;
   border-radius: 10px;
+  text-align: center;
 }
 
-/* ===== LIST ===== */
+/* LIST */
 .list {
   padding: 0 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
 .card {
   background: #020617;
   border-radius: 12px;
@@ -90,16 +72,11 @@ button:active {
 .card.up { border-color: #22c55e; }
 .card.down { border-color: #ef4444; }
 
-.row-top {
+.top {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
-.ip {
-  font-weight: 600;
-}
-
 .dot {
   width: 12px;
   height: 12px;
@@ -122,55 +99,41 @@ textarea {
   border-radius: 8px;
   padding: 8px;
   resize: none;
-  min-height: 42px;
-}
-textarea:focus {
-  outline: none;
-  border-color: #38bdf8;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== MENU PILIH SHEET ===== -->
 <div id="menu" class="menu">
-  <h2>📡 Pilih Lokasi Monitoring</h2>
-
+  <h3>Pilih Monitoring</h3>
   <button onclick="openSheet('BUMDES')">BUMDES</button>
-
-  <!-- NANTI TINGGAL TAMBAH -->
-  <!-- <button onclick="openSheet('KANTOR')">KANTOR</button> -->
-  <!-- <button onclick="openSheet('GUDANG')">GUDANG</button> -->
 </div>
 
-<!-- ===== DASHBOARD ===== -->
 <div id="dashboard" class="hidden">
-
   <div class="header">
     <button class="back" onclick="backMenu()">⬅</button>
-    <h2 id="title">Monitoring</h2>
+    <b id="title"></b>
   </div>
 
   <div class="summary">
-    <div class="sum-box">🟢 UP: <b id="upCount">0</b></div>
-    <div class="sum-box">🔴 DOWN: <b id="downCount">0</b></div>
+    <div class="sum">🟢 UP<br><b id="up">0</b></div>
+    <div class="sum">🔴 DOWN<br><b id="down">0</b></div>
   </div>
 
-  <div class="list" id="listData"></div>
-
+  <div id="list" class="list"></div>
 </div>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMbQFx6il185k2zkoElxgNMitigU7snwvpb--KHO919Bx4-vJYIpnznaHv0M4JcWG48A/exec";
-let CURRENT_SHEET = "";
+let CURRENT = "";
 
 function openSheet(sheet) {
-  CURRENT_SHEET = sheet;
+  CURRENT = sheet;
   document.getElementById("title").innerText = sheet;
   document.getElementById("menu").classList.add("hidden");
   document.getElementById("dashboard").classList.remove("hidden");
-  loadData();
+  load();
 }
 
 function backMenu() {
@@ -179,48 +142,48 @@ function backMenu() {
   clearInterval(window.timer);
 }
 
-async function loadData() {
+async function load() {
   clearInterval(window.timer);
   await fetchData();
   window.timer = setInterval(fetchData, 10000);
 }
 
 async function fetchData() {
-  const res = await fetch(`${SCRIPT_URL}?mode=list&sheet=${CURRENT_SHEET}`);
+  const res = await fetch(`${SCRIPT_URL}?mode=list&sheet=${CURRENT}`);
   const data = await res.json();
 
   let up = 0, down = 0;
-  const list = document.getElementById("listData");
+  const list = document.getElementById("list");
   list.innerHTML = "";
 
   data.slice(1).forEach(row => {
     const ip = row[0];
     const comment = row[2] || "";
     const status = (row[4] || "UP").toUpperCase();
-    const last = row[5] ? new Date(row[5]).toLocaleTimeString("id-ID") : "-";
+    const time = row[5]
+      ? new Date(row[5]).toLocaleTimeString("id-ID")
+      : "-";
 
-    if (status === "UP") up++; else down++;
+    status === "UP" ? up++ : down++;
 
     list.innerHTML += `
       <div class="card ${status === "UP" ? "up" : "down"}">
-        <div class="row-top">
-          <div class="ip">${ip}</div>
-          <div class="dot ${status === "UP" ? "up" : "down"}"></div>
+        <div class="top">
+          <b>${ip}</b>
+          <span class="dot ${status === "UP" ? "up" : "down"}"></span>
         </div>
-        <div class="meta">Update: ${last}</div>
-        <textarea
-          placeholder="Catatan..."
-          onblur="saveComment('${ip}', this.value)">${comment}</textarea>
+        <div class="meta">Update: ${time}</div>
+        <textarea onblur="save('${ip}', this.value)">${comment}</textarea>
       </div>
     `;
   });
 
-  document.getElementById("upCount").innerText = up;
-  document.getElementById("downCount").innerText = down;
+  document.getElementById("up").innerText = up;
+  document.getElementById("down").innerText = down;
 }
 
-function saveComment(ip, comment) {
-  fetch(`${SCRIPT_URL}?sheet=${CURRENT_SHEET}&ip=${ip}&comment=${encodeURIComponent(comment)}`);
+function save(ip, comment) {
+  fetch(`${SCRIPT_URL}?sheet=${CURRENT}&ip=${ip}&comment=${encodeURIComponent(comment)}`);
 }
 </script>
 

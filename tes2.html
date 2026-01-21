@@ -148,6 +148,7 @@ button {
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMbQFx6il185k2zkoElxgNMitigU7snwvpb--KHO919Bx4-vJYIpnznaHv0M4JcWG48A/exec";
 let CURRENT = "";
+let isTyping = false;
 
 function openSheet(sheet) {
   CURRENT = sheet;
@@ -170,6 +171,8 @@ async function load() {
 }
 
 async function fetchData() {
+  if (isTyping) return;
+
   const res = await fetch(`${SCRIPT_URL}?mode=list&sheet=${CURRENT}`);
   const data = await res.json();
 
@@ -199,7 +202,8 @@ async function fetchData() {
           <textarea
             class="comment"
             placeholder="Komentar..."
-            onblur="save('${ip}', this.value)"
+            onfocus="isTyping = true"
+            onblur="isTyping = false; save('${ip}', this.value)"
           >${comment}</textarea>
         </div>
 

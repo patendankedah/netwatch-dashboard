@@ -72,11 +72,23 @@ button {
 .card.up { border-color: #22c55e; }
 .card.down { border-color: #ef4444; }
 
-.top {
+/* ROW */
+.row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
+
+/* IP + STATUS */
+.left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 45%;
+}
+
+/* STATUS DOT */
 .dot {
   width: 12px;
   height: 12px;
@@ -85,20 +97,23 @@ button {
 .dot.up { background: #22c55e; }
 .dot.down { background: #ef4444; }
 
-.meta {
-  font-size: 12px;
-  color: #94a3b8;
-  margin: 4px 0 8px;
-}
-
-textarea {
-  width: 100%;
+/* COMMENT — SEJAJAR KOLOM DOWN */
+.comment {
+  width: 45%;
+  height: 36px;
   background: #020617;
   border: 1px solid #334155;
   color: #e5e7eb;
   border-radius: 8px;
-  padding: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
   resize: none;
+}
+
+.meta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 6px;
 }
 </style>
 </head>
@@ -168,12 +183,20 @@ async function fetchData() {
 
     list.innerHTML += `
       <div class="card ${status === "UP" ? "up" : "down"}">
-        <div class="top">
-          <b>${ip}</b>
-          <span class="dot ${status === "UP" ? "up" : "down"}"></span>
+        <div class="row">
+          <div class="left">
+            <b>${ip}</b>
+            <span class="dot ${status === "UP" ? "up" : "down"}"></span>
+          </div>
+
+          <textarea
+            class="comment"
+            placeholder="Komentar..."
+            onblur="save('${ip}', this.value)"
+          >${comment}</textarea>
         </div>
+
         <div class="meta">Update: ${time}</div>
-        <textarea onblur="save('${ip}', this.value)">${comment}</textarea>
       </div>
     `;
   });

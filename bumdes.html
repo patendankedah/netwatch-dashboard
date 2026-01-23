@@ -15,12 +15,13 @@ body {
 .hidden { display: none; }
 
 button {
-  padding: 14px;
+  padding: 10px 14px;
   background: #020617;
   border: 1px solid #334155;
   color: #e5e7eb;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 /* HEADER */
@@ -41,7 +42,7 @@ button {
   color: #e5e7eb;
   font-size: 22px;
   font-weight: bold;
-  display: none; /* disembunyikan */
+  display: none; 
   align-items: center;
   justify-content: center;
 }
@@ -116,6 +117,11 @@ button {
   padding: 6px 10px;
   font-size: 13px;
   resize: none;
+  margin-bottom: 4px;
+}
+.update-btn {
+  width: 100%;
+  text-align: center;
 }
 </style>
 </head>
@@ -164,10 +170,12 @@ async function fetchData() {
 
   data.slice(1).forEach(row => {
     const ip = row[0];
-    const comment = row[2] || "-";
+    const comment = row[2] || "";
     const status = (row[4] || "UP").toUpperCase();
 
     status === "UP" ? up++ : down++;
+
+    const textareaId = `comment-${ip.replace(/\./g,'')}`;
 
     list.innerHTML += `
       <div class="card ${status === "UP" ? "up" : "down"}">
@@ -176,11 +184,18 @@ async function fetchData() {
           <div class="status">
             <span class="dot ${status === "UP" ? "up" : "down"}"></span>
           </div>
-          <textarea
-            class="comment"
-            onfocus="isTyping = true"
-            onblur="isTyping = false; save('${ip}', this.value)"
-          >${comment}</textarea>
+          <div style="flex:1">
+            <textarea
+              id="${textareaId}"
+              class="comment"
+              placeholder="Tulis komentar..."
+              onfocus="isTyping=true"
+              onblur="isTyping=false"
+            >${comment}</textarea>
+            <div class="update-btn">
+              <button onclick="updateComment('${ip}')">Update</button>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -190,8 +205,23 @@ async function fetchData() {
   document.getElementById("down").innerText = down;
 }
 
-function save(ip, comment) {
-  fetch(`${SCRIPT_URL}?sheet=${CURRENT}&ip=${ip}&comment=${encodeURIComponent(comment)}`);
+function updateComment(ip) {
+  const textarea = document.getElementById(`comment-${ip.replace(/\./g,'')}`);
+  const comment = textarea.value;
+
+  if (!comment) {
+    alert("Tulis komentar dulu!");
+    return;
+  }
+
+  fetch(`${SCRIPT_URL}?sheet=${CURRENT}&ip=${ip}&comment=${encodeURIComponent(comment)}`)
+    .then(res => res.text())
+    .then(text => {
+      alert("Response dari server: " + text);
+    })
+    .catch(err => {
+      alert("Gagal mengirim komentar: " + err);
+    });
 }
 </script>
 

@@ -15,13 +15,12 @@ body {
 .hidden { display: none; }
 
 button {
-  padding: 10px 14px;
+  padding: 14px;
   background: #020617;
   border: 1px solid #334155;
   color: #e5e7eb;
   border-radius: 12px;
-  font-size: 14px;
-  cursor: pointer;
+  font-size: 16px;
 }
 
 /* HEADER */
@@ -42,7 +41,7 @@ button {
   color: #e5e7eb;
   font-size: 22px;
   font-weight: bold;
-  display: none; 
+  display: none;
   align-items: center;
   justify-content: center;
 }
@@ -117,11 +116,6 @@ button {
   padding: 6px 10px;
   font-size: 13px;
   resize: none;
-  margin-bottom: 4px;
-}
-.update-btn {
-  width: 100%;
-  text-align: center;
 }
 </style>
 </head>
@@ -147,7 +141,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMbQFx6il185k2zkoEl
 const CURRENT = "BUMDES";
 let isTyping = false;
 
-/* AUTO LOAD */
 document.addEventListener("DOMContentLoaded", () => {
   load();
 });
@@ -161,67 +154,54 @@ async function load() {
 async function fetchData() {
   if (isTyping) return;
 
-  const res = await fetch(`${SCRIPT_URL}?mode=list&sheet=${CURRENT}`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${SCRIPT_URL}?mode=list&sheet=${CURRENT}`);
+    const data = await res.json();
 
-  let up = 0, down = 0;
-  const list = document.getElementById("list");
-  list.innerHTML = "";
+    let up = 0, down = 0;
+    const list = document.getElementById("list");
+    list.innerHTML = "";
 
-  data.slice(1).forEach(row => {
-    const ip = row[0];
-    const comment = row[2] || "";
-    const status = (row[4] || "UP").toUpperCase();
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const ip = row[0];
+      if (!ip) continue;
 
-    status === "UP" ? up++ : down++;
+      const comment = row[2] !== undefined ? row[2] : "";
+      const status = row[4] ? row[4].toString().toUpperCase() : "UP";
 
-    const textareaId = `comment-${ip.replace(/\./g,'')}`;
+      if (status === "UP") up++; else down++;
 
-    list.innerHTML += `
-      <div class="card ${status === "UP" ? "up" : "down"}">
-        <div class="row">
-          <div class="ip">${ip}</div>
-          <div class="status">
-            <span class="dot ${status === "UP" ? "up" : "down"}"></span>
-          </div>
-          <div style="flex:1">
-            <textarea
-              id="${textareaId}"
-              class="comment"
-              placeholder="Tulis komentar..."
-              onfocus="isTyping=true"
-              onblur="isTyping=false"
-            >${comment}</textarea>
-            <div class="update-btn">
-              <button onclick="updateComment('${ip}')">Update</button>
+      list.innerHTML += `
+        <div class="card ${status === "UP" ? "up" : "down"}">
+          <div class="row">
+            <div class="ip">${ip}</div>
+            <div class="status">
+              <span class="dot ${status === "UP" ? "up" : "down"}"></span>
             </div>
+            <textarea
+              class="comment"
+              onfocus="isTyping=true"
+              onblur="isTyping=false; save('${ip}', this.value)"
+            >${comment}</textarea>
           </div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    }
 
-  document.getElementById("up").innerText = up;
-  document.getElementById("down").innerText = down;
+    document.getElementById("up").innerText = up;
+    document.getElementById("down").innerText = down;
+
+  } catch(err) {
+    console.error("Fetch error:", err);
+  }
 }
 
-function updateComment(ip) {
-  const textarea = document.getElementById(`comment-${ip.replace(/\./g,'')}`);
-  const comment = textarea.value;
-
-  if (!comment) {
-    alert("Tulis komentar dulu!");
-    return;
-  }
-
+function save(ip, comment) {
   fetch(`${SCRIPT_URL}?sheet=${CURRENT}&ip=${ip}&comment=${encodeURIComponent(comment)}`)
     .then(res => res.text())
-    .then(text => {
-      alert("Response dari server: " + text);
-    })
-    .catch(err => {
-      alert("Gagal mengirim komentar: " + err);
-    });
+    .then(text => console.log("Server response:", text))
+    .catch(err => console.error("Gagal mengirim komentar:", err));
 }
 </script>
 

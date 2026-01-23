@@ -12,46 +12,19 @@ body {
   background: #0f172a;
   color: #e5e7eb;
 }
-.hidden { display: none; }
 
-button {
-  padding: 14px;
-  background: #020617;
-  border: 1px solid #334155;
-  color: #e5e7eb;
-  border-radius: 12px;
-  font-size: 16px;
-}
-
-/* HEADER */
 .header {
   padding: 14px 16px;
   display: flex;
-  gap: 12px;
   align-items: center;
 }
 
-/* BACK */
-.back {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #020617;
-  border: 1px solid #334155;
-  color: #e5e7eb;
-  font-size: 22px;
-  font-weight: bold;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-
-/* SUMMARY */
 .summary {
   padding: 0 16px 16px;
   display: flex;
   gap: 8px;
 }
+
 .sum {
   flex: 1;
   background: #020617;
@@ -60,31 +33,30 @@ button {
   text-align: center;
 }
 
-/* LIST */
 .list {
   padding: 0 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
+
 .card {
   background: #020617;
   border-radius: 14px;
   padding: 12px;
   border-left: 4px solid transparent;
 }
+
 .card.up { border-color: #22c55e; }
 .card.down { border-color: #ef4444; }
 
-/* GRID */
 .row {
   display: grid;
-  grid-template-columns: 150px 22px 1fr;
+  grid-template-columns: 140px 22px 1fr;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-/* IP */
 .ip {
   font-weight: 600;
   white-space: nowrap;
@@ -92,30 +64,26 @@ button {
   text-overflow: ellipsis;
 }
 
-/* STATUS */
 .status {
   display: flex;
   justify-content: center;
 }
+
 .dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
 }
+
 .dot.up { background: #22c55e; }
 .dot.down { background: #ef4444; }
 
-/* COMMENT */
-.comment {
-  width: 100%;
-  height: 34px;
-  background: #020617;
-  border: 1px solid #334155;
-  color: #e5e7eb;
-  border-radius: 10px;
-  padding: 6px 10px;
-  font-size: 13px;
-  resize: none;
+.last-update {
+  font-size: 12px;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
 </head>
@@ -124,8 +92,7 @@ button {
 
 <div id="dashboard">
   <div class="header">
-    <button class="back">←</button>
-    <b id="title">BUMDES</b>
+    <b>BUMDES</b>
   </div>
 
   <div class="summary">
@@ -139,7 +106,20 @@ button {
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMbQFx6il185k2zkoElxgNMitigU7snwvpb--KHO919Bx4-vJYIpnznaHv0M4JcWG48A/exec";
 const CURRENT = "BUMDES";
-let isTyping = false;
+
+/* FORMAT TANGGAL */
+function formatDate(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+
+  return `${dd}-${mm}-${yyyy} ${hh}:${min}`;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   load();
@@ -152,8 +132,6 @@ async function load() {
 }
 
 async function fetchData() {
-  if (isTyping) return;
-
   try {
     const res = await fetch(`${SCRIPT_URL}?mode=list&sheet=${CURRENT}`);
     const data = await res.json();
@@ -167,8 +145,8 @@ async function fetchData() {
       const ip = row[0];
       if (!ip) continue;
 
-      const comment = row[2] !== undefined ? row[2] : "";
-      const status = row[4] ? row[4].toString().toUpperCase() : "UP";
+      const status = row[4] ? row[4].toUpperCase() : "UP";
+      const lastUpdate = formatDate(row[5]);
 
       if (status === "UP") up++; else down++;
 
@@ -179,11 +157,7 @@ async function fetchData() {
             <div class="status">
               <span class="dot ${status === "UP" ? "up" : "down"}"></span>
             </div>
-            <textarea
-              class="comment"
-              onfocus="isTyping=true"
-              onblur="isTyping=false; save('${ip}', this.value)"
-            >${comment}</textarea>
+            <div class="last-update">${lastUpdate}</div>
           </div>
         </div>
       `;
@@ -192,16 +166,9 @@ async function fetchData() {
     document.getElementById("up").innerText = up;
     document.getElementById("down").innerText = down;
 
-  } catch(err) {
+  } catch (err) {
     console.error("Fetch error:", err);
   }
-}
-
-function save(ip, comment) {
-  fetch(`${SCRIPT_URL}?sheet=${CURRENT}&ip=${ip}&comment=${encodeURIComponent(comment)}`)
-    .then(res => res.text())
-    .then(text => console.log("Server response:", text))
-    .catch(err => console.error("Gagal mengirim komentar:", err));
 }
 </script>
 

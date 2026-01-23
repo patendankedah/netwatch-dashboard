@@ -115,6 +115,7 @@ th {
 @media (max-width: 768px) {
   h1 { font-size: 24px; }
   th, td { font-size: 14px; padding: 10px; }
+
   .server-select button,
   .back-btn { font-size: 16px; padding: 12px; }
 
@@ -135,7 +136,7 @@ th {
   <div class="server-select" id="serverSelect">
     <button onclick="selectServer('Sheet4')">V1</button>
     <button onclick="selectServer('Sheet5')">V2</button>
-    <button onclick="selectServer('Sheet6')">--dalam perbaikan--</button>   
+    <button onclick="openFixnet()">FIXNET</button>
   </div>
 
   <!-- BACK -->
@@ -172,7 +173,12 @@ const API_BASE = "https://script.google.com/macros/s/AKfycbxWdDlnie9XwxUaokH3t2_
 let currentSheet = null;
 let refreshTimer = null;
 
-/* PILIH SERVER */
+/* PINDAH KE FIXNET */
+function openFixnet() {
+  window.location.href = "https://patendankedah.github.io/netwatch-dashboard/fixnet.html";
+}
+
+/* PILIH SERVER TOR */
 function selectServer(sheet) {
   currentSheet = sheet;
   document.getElementById("serverSelect").style.display = "none";
@@ -184,7 +190,7 @@ function selectServer(sheet) {
   refreshTimer = setInterval(loadData, 10000);
 }
 
-/* KEMBALI */
+/* KEMBALI KE MENU */
 function backToMenu() {
   clearInterval(refreshTimer);
   currentSheet = null;
@@ -198,10 +204,11 @@ function backToMenu() {
     "<tr><td colspan='2'>Pilih server di atas</td></tr>";
 }
 
-/* HITUNG LEVEL */
+/* HITUNG LEVEL NODE */
 function getLevel(item, all) {
   let level = 0;
   let parent = item.parent;
+
   while (parent && parent !== '-') {
     const p = all.find(d => d.comment === parent);
     if (!p) break;
@@ -211,7 +218,7 @@ function getLevel(item, all) {
   return level;
 }
 
-/* LOAD DATA */
+/* LOAD DATA TOR */
 async function loadData() {
   if (!currentSheet) return;
 
@@ -225,7 +232,7 @@ async function loadData() {
   }
 }
 
-/* RENDER TABLE + COUNT */
+/* RENDER TABLE */
 function renderTable(data) {
   const tbody = document.getElementById("statusBody");
   tbody.innerHTML = "";
@@ -234,11 +241,9 @@ function renderTable(data) {
   let down = 0;
 
   data.forEach(d => {
-    if (d.status === "up") up++;
-    else down++;
+    d.status === "up" ? up++ : down++;
 
     const level = getLevel(d, data);
-
     const tr = document.createElement("tr");
     tr.className = "level-" + level;
 

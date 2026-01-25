@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sheet Mobile Viewer</title>
+<title>Laporan Bulanan</title>
 
 <style>
 :root{
   --bg:#f1f5f9;
   --card:#ffffff;
-  --border:#e5e7eb;
-  --text:#0f172a;
-  --header:#f8fafc;
+  --grid:#9aa0a6;
+  --text:#202124;
 }
 
 *{box-sizing:border-box}
@@ -24,60 +23,95 @@ body{
 }
 
 /* HEADER */
-.header{
+
+.app-header{
   position:sticky;
   top:0;
-  z-index:10;
-  background:var(--card);
-  border-bottom:1px solid var(--border);
+  z-index:100;
+  background:linear-gradient(135deg,#1e3a8a,#2563eb);
+  color:#fff;
   padding:10px 12px;
 }
 
-.header h1{
+.app-title{
   font-size:14px;
-  margin:0 0 6px 0;
+  font-weight:600;
+  margin-bottom:6px;
 }
 
 select{
   width:100%;
   padding:8px 10px;
-  font-size:14px;
   border-radius:8px;
-  border:1px solid var(--border);
-  background:#fff;
+  border:none;
+  font-size:13px;
+  outline:none;
 }
 
-/* TABLE WRAPPER */
-.wrapper{
-  height:calc(100vh - 78px);
-  overflow:auto;
+/* CONTENT */
+
+.container{
+  padding:8px;
+}
+
+.card{
   background:var(--card);
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  overflow:hidden;
 }
 
 /* TABLE */
+
+.table-wrapper{
+  overflow:auto;
+  max-height:calc(100vh - 120px);
+}
+
 table{
   border-collapse:collapse;
-  width:max-content;
   min-width:100%;
+  width:max-content;
+  font-size:13px;
+  border:1.5px solid var(--grid);
 }
 
 td{
-  border:1px solid var(--border);
-  padding:0 8px;
-  font-size:13px;
+  border:1.2px solid var(--grid);
+  padding:2px 6px;
   white-space:nowrap;
+  vertical-align:middle;
 }
+
+/* HEADER ROW */
 
 tr:first-child td{
-  background:var(--header);
+  background:#f8f9fa;
   font-weight:600;
+  position:sticky;
+  top:0;
+  z-index:10;
+  border-bottom:2px solid #5f6368;
 }
 
-/* MOBILE OPTIMIZATION */
-@media (max-width:600px){
-  td{
+/* MESSAGE */
+
+.message{
+  text-align:center;
+  padding:30px 10px;
+  font-size:13px;
+  color:#6b7280;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+  table{
     font-size:12px;
-    padding:0 6px;
+  }
+
+  td{
+    padding:2px 5px;
   }
 }
 </style>
@@ -85,94 +119,148 @@ tr:first-child td{
 
 <body>
 
-<div class="header">
-  <h1 id="title">Loading...</h1>
+<!-- HEADER -->
+<div class="app-header">
+  <div class="app-title" id="title">Laporan Bulanan</div>
   <select id="sheetSelect">
-    <option value="">Sheet Aktif</option>
-    <option value="012026">Januari 2026</option>
-    <option value="022026">Februari 2026</option>
-    <option value="032026">Maret 2026</option>
-    <option value="042026">April 2026</option>
+    <option value="" selected disabled>Pilih Periode Laporan</option>
   </select>
 </div>
 
-<div class="wrapper">
-  <table id="table"></table>
+<!-- CONTENT -->
+<div class="container">
+  <div class="card">
+    <div class="table-wrapper">
+      <div id="message" class="message">
+        Silakan pilih periode laporan
+      </div>
+      <table id="table"></table>
+    </div>
+  </div>
 </div>
 
 <script>
-/* ==============================
-   GANTI URL APPS SCRIPT DI SINI
-================================ */
-const API_URL =
-"https://script.google.com/macros/s/AKfycbzeT0pWrx4UjsyxNIlE60sW5Q4cuNvELvgdtBEmyPX-W_HXsNATarCamaxXfsr6_Q52_w/exec";
+
+/* API URL */
+const API_URL = "https://script.google.com/macros/s/AKfycbzeT0pWrx4UjsyxNIlE60sW5Q4cuNvELvgdtBEmyPX-W_HXsNATarCamaxXfsr6_Q52_w/exec";
+
+/* ELEMENT */
 
 const table = document.getElementById("table");
 const title = document.getElementById("title");
 const select = document.getElementById("sheetSelect");
+const message = document.getElementById("message");
 
-select.addEventListener("change", () => {
-  loadSheet(select.value);
-});
+/* MONTH MAP */
 
-async function loadSheet(sheet=""){
-  title.textContent = "Loading...";
-  table.innerHTML = "";
+const bulanMap = {
+  "01":"Januari","02":"Februari","03":"Maret","04":"April",
+  "05":"Mei","06":"Juni","07":"Juli","08":"Agustus",
+  "09":"September","10":"Oktober","11":"November","12":"Desember"
+};
+
+function formatLabel(sheet){
+  if(sheet.length !== 6) return sheet;
+  return (bulanMap[sheet.substr(0,2)] || sheet) + " " + sheet.substr(2);
+}
+
+/* LOAD SHEET LIST */
+
+async function loadSheetList(){
 
   try{
-    const url = API_URL + (sheet ? "?sheet="+sheet : "");
-    const res = await fetch(url);
+    const res = await fetch(API_URL + "?mode=list");
     const data = await res.json();
 
-    if(data.error){
-      title.textContent = data.message;
-      return;
-    }
+    select.innerHTML = '<option value="" selected disabled>Pilih Periode Laporan</option>';
 
-    title.textContent = "Periode: " + data.sheetName;
-    renderTable(data);
+    data.sheets.forEach(name=>{
+      const opt=document.createElement("option");
+      opt.value=name;
+      opt.textContent=formatLabel(name);
+      select.appendChild(opt);
+    });
 
-  }catch(err){
-    title.textContent = "Gagal load data";
+  }catch(e){
+    message.textContent="Gagal memuat periode";
   }
 }
 
-function renderTable(data){
-  data.values.forEach((row,r)=>{
-    const tr = document.createElement("tr");
-    tr.style.height = data.rowHeights[r] + "px";
+/* CHANGE EVENT */
 
-    row.forEach((cell,c)=>{
-      const td = document.createElement("td");
+select.addEventListener("change",()=>{
 
-      /* === CONTOH GABUNG KOLOM A + C (BARIS DATA SAJA) === */
-      if(c === 0 && r > 0){
-        const colA = data.values[r][0] || "";
-        const colC = data.values[r][2] || "";
-        td.textContent = colA + " " + colC;
-        td.style.width = (data.colWidths[0] + data.colWidths[2]) + "px";
-      } 
-      else if(c === 2 && r > 0){
-        return; // skip kolom C
-      }
-      else{
-        td.textContent = cell;
-        td.style.width = data.colWidths[c] + "px";
-      }
+  if(!select.value){
+    table.innerHTML="";
+    message.style.display="block";
+    title.textContent="Laporan Bulanan";
+    return;
+  }
 
-      td.style.background = data.backgrounds[r][c];
-      td.style.color = data.fontColors[r][c];
-      td.style.lineHeight = data.rowHeights[r] + "px";
+  loadSheet(select.value);
+});
 
-      tr.appendChild(td);
-    });
+/* LOAD DATA */
 
-    table.appendChild(tr);
-  });
+async function loadSheet(sheet){
+
+  message.style.display="block";
+  message.textContent="Memuat laporan...";
+  table.innerHTML="";
+  title.textContent="Memuat laporan...";
+
+  try{
+    const res = await fetch(API_URL + "?sheet="+sheet);
+    const data = await res.json();
+
+    if(data.error){
+      message.textContent=data.message;
+      title.textContent="Laporan Bulanan";
+      return;
+    }
+
+    title.textContent="Periode: "+formatLabel(data.sheetName);
+
+    renderTable(data);
+    message.style.display="none";
+
+  }catch(e){
+    message.textContent="Gagal memuat data";
+    title.textContent="Laporan Bulanan";
+  }
 }
 
-/* LOAD PERTAMA */
-loadSheet();
+/* RENDER A1:Q25 */
+
+function renderTable(data){
+
+  table.innerHTML="";
+
+  for(let r=0;r<25;r++){
+
+    const tr=document.createElement("tr");
+    tr.style.height=data.rowHeights[r]+"px";
+
+    for(let c=0;c<17;c++){
+
+      const td=document.createElement("td");
+
+      td.textContent=data.values[r][c] || "";
+      td.style.width=data.colWidths[c]+"px";
+      td.style.background=data.backgrounds[r][c];
+      td.style.color=data.fontColors[r][c];
+
+      tr.appendChild(td);
+    }
+
+    table.appendChild(tr);
+  }
+}
+
+/* INIT */
+
+loadSheetList();
+
 </script>
 
 </body>

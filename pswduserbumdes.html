@@ -4,68 +4,56 @@
 <meta charset="UTF-8">
 <title>Ubah Password User BUMDES</title>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body {
   font-family: Arial, sans-serif;
-  padding: 15px;
+  padding: 20px;
   background: linear-gradient(to bottom, #6a11cb, #2575fc);
   min-height: 100vh;
 }
 
 h1 {
-  color:white;
-  text-align:center;
-  margin-bottom:25px;
-  font-size:28px;
+  color: white;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 28px;
 }
 
 .container {
-  background:#fff;
-  padding:25px;
-  border-radius:20px;
-  margin-bottom:25px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 20px;
+  margin-bottom: 25px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  text-align: center;
 }
 
-h3 {
-  color:#333;
-  font-size:20px;
-  margin-bottom:10px;
-}
-
-input, button, textarea {
-  width:100%;
-  padding:16px;
-  margin-top:10px;
-  font-size:18px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  box-sizing:border-box;
+input {
+  width: 100%;
+  padding: 18px;
+  margin-top: 12px;
+  font-size: 20px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 button {
-  background:#2196f3;
-  color:white;
-  border:none;
-  margin-top:10px;
-  font-size:18px;
-  cursor:pointer;
+  width: 100%;
+  padding: 20px;
+  margin-top: 15px;
+  font-size: 22px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  color: white;
 }
 
-button.copy {
-  background:#4caf50;
-}
-
-button.clear {
-  background:#f44336;
-}
-
-textarea {
-  height:110px;
-  resize:none;
-  margin-top:10px;
-  font-size:16px;
-}
+button.generate { background: #2196f3; }
+button.copy { background: #4caf50; }
+button.clear { background: #f44336; }
 </style>
 </head>
 <body>
@@ -75,62 +63,44 @@ textarea {
 <div class="container">
 <h3>Generate 1 (Cek User)</h3>
 <input type="text" id="prefix1" placeholder="Isi nama (contoh: ayah)">
-<button onclick="gen1()">Generate</button>
-<button class="copy" onclick="copy1()">Copy</button>
+<button class="copy" onclick="copy1()">Copy Script</button>
 <button class="clear" onclick="clear1()">Clear Data</button>
-<textarea id="out1" readonly></textarea>
 </div>
 
 <div class="container">
 <h3>Generate 2 (Ganti Password)</h3>
 <input type="text" id="user2" placeholder="User (contoh: ayah1)">
 <input type="text" id="pass2" placeholder="Password Baru">
-<button onclick="gen2()">Generate</button>
-<button class="copy" onclick="copy2()">Copy</button>
+<button class="copy" onclick="copy2()">Copy Script</button>
 <button class="clear" onclick="clear2()">Clear Data</button>
-<textarea id="out2" readonly></textarea>
 </div>
 
 <script>
-function gen1(){
-  let p=document.getElementById("prefix1").value.trim();
-  if(p==""){alert("Isi nama!");return;}
-  document.getElementById("out1").value=
-  `/ip hotspot user print detail where name~"^${p}" and profile="Rumahan 5 USER"`;
-}
-
-function gen2(){
-  let u=document.getElementById("user2").value.trim();
-  let pw=document.getElementById("pass2").value.trim();
-  if(u==""||pw==""){alert("Lengkapi data!");return;}
-  document.getElementById("out2").value=
-  `/ip hotspot user set ${u} password=${pw}; `+
-  `/ip hotspot active remove [find user=${u}]; `+
-  `/ip hotspot user print detail where name~"^${u}" and profile="Rumahan 5 USER"`;
-}
-
 function copy1(){
-  let t=document.getElementById("out1");
-  t.select();document.execCommand("copy");
-  alert("Script Generator 1 berhasil dicopy!");
+  let prefix = document.getElementById("prefix1").value.trim();
+  if(prefix==""){ alert("Isi nama!"); return; }
+  let script = `/ip hotspot user print detail where name~"^${prefix}" and profile="Rumahan 5 USER"`;
+  
+  navigator.clipboard.writeText(script)
+    .then(()=> alert("Script Generator 1 berhasil dicopy!"))
+    .catch(()=> alert("Gagal copy script!"));
 }
 
 function copy2(){
-  let t=document.getElementById("out2");
-  t.select();document.execCommand("copy");
-  alert("Script Generator 2 berhasil dicopy!");
+  let user = document.getElementById("user2").value.trim();
+  let pass = document.getElementById("pass2").value.trim();
+  if(user=="" || pass==""){ alert("Lengkapi data!"); return; }
+  let script = `/ip hotspot user set ${user} password=${pass}; ` +
+               `/ip hotspot active remove [find user=${user}]; ` +
+               `/ip hotspot user print detail where name~"^${user}" and profile="Rumahan 5 USER"`;
+
+  navigator.clipboard.writeText(script)
+    .then(()=> alert("Script Generator 2 berhasil dicopy!"))
+    .catch(()=> alert("Gagal copy script!"));
 }
 
-function clear1(){
-  document.getElementById("prefix1").value="";
-  document.getElementById("out1").value="";
-}
-
-function clear2(){
-  document.getElementById("user2").value="";
-  document.getElementById("pass2").value="";
-  document.getElementById("out2").value="";
-}
+function clear1(){ document.getElementById("prefix1").value=""; }
+function clear2(){ document.getElementById("user2").value=""; document.getElementById("pass2").value=""; }
 </script>
 
 </body>

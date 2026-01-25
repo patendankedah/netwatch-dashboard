@@ -77,35 +77,37 @@ h1 {
   </div>
 </div>
 
-<!-- ===== FULL PAGE IFRAME ===== -->
+<!-- ===== IFRAME VIEW ===== -->
 <div id="iframeView">
   <iframe id="pageFrame"></iframe>
 </div>
 
 <script>
+
 function openPage(type) {
+
   const frame = document.getElementById("pageFrame");
 
   if (type === "ng") {
     frame.src = "https://patendankedah.github.io/netwatch-dashboard/nghotspot.html";
-    history.pushState({ page: "ng" }, "", "#ng");
   }
 
   if (type === "rekap") {
     frame.src = "https://patendankedah.github.io/netwatch-dashboard/laporanbulananucok.html";
-    history.pushState({ page: "rekap" }, "", "#rekap");
   }
 
   document.getElementById("menuView").style.display = "none";
   document.getElementById("iframeView").style.display = "block";
+
+  // Aktifkan tombol back
+  history.pushState(null, null, location.href);
 }
 
-/* BACK BUTTON HP */
+/* BACK BUTTON HP => RELOAD KE HALAMAN AWAL */
 window.onpopstate = function () {
-  document.getElementById("pageFrame").src = "";
-  document.getElementById("iframeView").style.display = "none";
-  document.getElementById("menuView").style.display = "block";
+  window.location.reload();
 };
+
 </script>
 
 </body>

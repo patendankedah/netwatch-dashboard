@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MikroTik Generator</title>
+
+<style>
+body { font-family: Arial; padding:20px; }
+input, button { padding:8px; margin:5px 0; width:300px; }
+textarea { width:100%; height:90px; margin-top:10px; }
+hr { margin:30px 0; }
+</style>
+
+</head>
+<body>
+
+<h2>Generator 1 - Cek User</h2>
+<label>Prefix Nama (contoh: ayah)</label><br>
+<input type="text" id="prefix1"><br>
+<button onclick="gen1()">Generate</button>
+<button onclick="copy1()">Copy</button>
+<textarea id="out1" readonly></textarea>
+
+<hr>
+
+<h2>Generator 2 - Ganti Password & Kick</h2>
+<label>Nama User</label><br>
+<input type="text" id="user2"><br>
+
+<label>Password Baru</label><br>
+<input type="text" id="pass2"><br>
+
+<button onclick="gen2()">Generate</button>
+<button onclick="copy2()">Copy</button>
+<textarea id="out2" readonly></textarea>
+
+<script>
+function gen1(){
+  let p = document.getElementById("prefix1").value.trim();
+  if(p==""){ alert("Isi prefix!"); return; }
+  document.getElementById("out1").value =
+  `/ip hotspot user print detail where name~"^${p}" and profile="Rumahan 5 USER"`;
+}
+
+function gen2(){
+  let u = document.getElementById("user2").value.trim();
+  let pw = document.getElementById("pass2").value.trim();
+  if(u=="" || pw==""){ alert("Isi semua kolom!"); return; }
+
+  document.getElementById("out2").value =
+  `/ip hotspot user set ${u} password=${pw}; ` +
+  `/ip hotspot active remove [find user=${u}]; ` +
+  `/ip hotspot user print detail where name~"^${u}" and profile="Rumahan 5 USER"`;
+}
+
+// Tombol copy generator 1
+function copy1(){
+  let t = document.getElementById("out1");
+  t.select();
+  t.setSelectionRange(0, 99999); // Untuk mobile
+  document.execCommand("copy");
+  alert("Script Generator 1 sudah dicopy!");
+}
+
+// Tombol copy generator 2
+function copy2(){
+  let t = document.getElementById("out2");
+  t.select();
+  t.setSelectionRange(0, 99999); // Untuk mobile
+  document.execCommand("copy");
+  alert("Script Generator 2 sudah dicopy!");
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sheet Mobile Viewer</title>
+
+<style>
+:root{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#0f172a;
+  --header:#f8fafc;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+.header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:10px 12px;
+}
+
+.header h1{
+  font-size:14px;
+  margin:0 0 6px 0;
+}
+
+select{
+  width:100%;
+  padding:8px 10px;
+  font-size:14px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#fff;
+}
+
+/* TABLE WRAPPER */
+.wrapper{
+  height:calc(100vh - 78px);
+  overflow:auto;
+  background:var(--card);
+}
+
+/* TABLE */
+table{
+  border-collapse:collapse;
+  width:max-content;
+  min-width:100%;
+}
+
+td{
+  border:1px solid var(--border);
+  padding:0 8px;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+tr:first-child td{
+  background:var(--header);
+  font-weight:600;
+}
+
+/* MOBILE OPTIMIZATION */
+@media (max-width:600px){
+  td{
+    font-size:12px;
+    padding:0 6px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1 id="title">Loading...</h1>
+  <select id="sheetSelect">
+    <option value="">Sheet Aktif</option>
+    <option value="012026">Januari 2026</option>
+    <option value="022026">Februari 2026</option>
+    <option value="032026">Maret 2026</option>
+    <option value="042026">April 2026</option>
+  </select>
+</div>
+
+<div class="wrapper">
+  <table id="table"></table>
+</div>
+
+<script>
+/* ==============================
+   GANTI URL APPS SCRIPT DI SINI
+================================ */
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzeT0pWrx4UjsyxNIlE60sW5Q4cuNvELvgdtBEmyPX-W_HXsNATarCamaxXfsr6_Q52_w/exec";
+
+const table = document.getElementById("table");
+const title = document.getElementById("title");
+const select = document.getElementById("sheetSelect");
+
+select.addEventListener("change", () => {
+  loadSheet(select.value);
+});
+
+async function loadSheet(sheet=""){
+  title.textContent = "Loading...";
+  table.innerHTML = "";
+
+  try{
+    const url = API_URL + (sheet ? "?sheet="+sheet : "");
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if(data.error){
+      title.textContent = data.message;
+      return;
+    }
+
+    title.textContent = "Periode: " + data.sheetName;
+    renderTable(data);
+
+  }catch(err){
+    title.textContent = "Gagal load data";
+  }
+}
+
+function renderTable(data){
+  data.values.forEach((row,r)=>{
+    const tr = document.createElement("tr");
+    tr.style.height = data.rowHeights[r] + "px";
+
+    row.forEach((cell,c)=>{
+      const td = document.createElement("td");
+
+      /* === CONTOH GABUNG KOLOM A + C (BARIS DATA SAJA) === */
+      if(c === 0 && r > 0){
+        const colA = data.values[r][0] || "";
+        const colC = data.values[r][2] || "";
+        td.textContent = colA + " " + colC;
+        td.style.width = (data.colWidths[0] + data.colWidths[2]) + "px";
+      } 
+      else if(c === 2 && r > 0){
+        return; // skip kolom C
+      }
+      else{
+        td.textContent = cell;
+        td.style.width = data.colWidths[c] + "px";
+      }
+
+      td.style.background = data.backgrounds[r][c];
+      td.style.color = data.fontColors[r][c];
+      td.style.lineHeight = data.rowHeights[r] + "px";
+
+      tr.appendChild(td);
+    });
+
+    table.appendChild(tr);
+  });
+}
+
+/* LOAD PERTAMA */
+loadSheet();
+</script>
+
+</body>
+</html>

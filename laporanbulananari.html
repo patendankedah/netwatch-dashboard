@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Data</title>
+
+<style>
+:root{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --grid:#9aa0a6;
+  --text:#202124;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+
+.app-header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:linear-gradient(135deg,#1e3a8a,#2563eb);
+  color:#fff;
+  padding:10px 12px;
+}
+
+.app-title{
+  font-size:14px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+select{
+  width:100%;
+  padding:8px 10px;
+  border-radius:8px;
+  border:none;
+  font-size:13px;
+  outline:none;
+}
+
+/* CONTENT */
+
+.container{
+  padding:8px;
+}
+
+.card{
+  background:var(--card);
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+
+/* TABLE */
+
+.table-wrapper{
+  overflow:auto;
+  max-height:calc(100vh - 120px);
+}
+
+table{
+  border-collapse:collapse;
+  min-width:100%;
+  width:max-content;
+  font-size:13px;
+  border:1.5px solid var(--grid);
+}
+
+td{
+  border:1.2px solid var(--grid);
+  padding:3px 6px;
+  white-space:nowrap;
+  vertical-align:middle;
+}
+
+/* HEADER ROW */
+
+tr:first-child td{
+  background:#f8f9fa;
+  font-weight:600;
+  position:sticky;
+  top:0;
+  z-index:10;
+  border-bottom:2px solid #5f6368;
+}
+
+/* MESSAGE */
+
+.message{
+  text-align:center;
+  padding:30px 10px;
+  font-size:13px;
+  color:#6b7280;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+  table{
+    font-size:12px;
+  }
+
+  td{
+    padding:2px 5px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="app-title" id="title">Laporan Data</div>
+  <select id="sheetSelect">
+    <option value="" selected disabled>Pilih Sheet</option>
+  </select>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+  <div class="card">
+    <div class="table-wrapper">
+      <div id="message" class="message">
+        Silakan pilih sheet
+      </div>
+      <table id="table"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+
+/* GANTI DENGAN URL WEB APP BARU */
+const API_URL = "https://script.google.com/macros/s/AKfycbwfW7GxgHycO9M1_mlRutXQAzQA3-1Ppo9qLjtlTRLx1L4BCPyOb1q6VH4r4UwUlR4NrQ/exec";
+
+/* ELEMENT */
+
+const table = document.getElementById("table");
+const title = document.getElementById("title");
+const select = document.getElementById("sheetSelect");
+const message = document.getElementById("message");
+
+/* LOAD SHEET LIST */
+
+async function loadSheetList(){
+
+  try{
+
+    const res = await fetch(API_URL + "?mode=list");
+    const data = await res.json();
+
+    select.innerHTML = '<option value="" selected disabled>Pilih Sheet</option>';
+
+    data.sheets.forEach(name=>{
+      const opt=document.createElement("option");
+      opt.value=name;
+      opt.textContent=name;
+      select.appendChild(opt);
+    });
+
+  }catch(e){
+
+    message.textContent="Gagal memuat daftar sheet";
+
+  }
+}
+
+/* CHANGE EVENT */
+
+select.addEventListener("change",()=>{
+
+  if(!select.value){
+    resetUI();
+    return;
+  }
+
+  loadSheet(select.value);
+
+});
+
+function resetUI(){
+
+  table.innerHTML="";
+  message.style.display="block";
+  message.textContent="Silakan pilih sheet";
+  title.textContent="Laporan Data";
+
+}
+
+/* LOAD DATA */
+
+async function loadSheet(sheet){
+
+  message.style.display="block";
+  message.textContent="Memuat data...";
+  table.innerHTML="";
+  title.textContent="Memuat...";
+
+  try{
+
+    const res = await fetch(API_URL + "?sheet=" + sheet);
+    const data = await res.json();
+
+    if(data.error){
+      message.textContent=data.message;
+      title.textContent="Laporan Data";
+      return;
+    }
+
+    title.textContent="Sheet: " + data.sheetName;
+
+    renderTable(data);
+    message.style.display="none";
+
+  }catch(e){
+
+    message.textContent="Gagal memuat data";
+    title.textContent="Laporan Data";
+
+  }
+}
+
+/* RENDER TABLE DINAMIS */
+
+function renderTable(data){
+
+  table.innerHTML="";
+
+  const rows = data.values.length;
+  const cols = data.values[0].length;
+
+  for(let r=0;r<rows;r++){
+
+    const tr=document.createElement("tr");
+
+    if(data.rowHeights[r]){
+      tr.style.height = data.rowHeights[r] + "px";
+    }
+
+    for(let c=0;c<cols;c++){
+
+      const td=document.createElement("td");
+
+      td.textContent = data.values[r][c] || "";
+
+      if(data.colWidths[c]){
+        td.style.width = data.colWidths[c] + "px";
+      }
+
+      td.style.background = data.backgrounds[r][c];
+      td.style.color = data.fontColors[r][c];
+
+      tr.appendChild(td);
+
+    }
+
+    table.appendChild(tr);
+
+  }
+}
+
+/* INIT */
+
+loadSheetList();
+
+</script>
+
+</body>
+</html>

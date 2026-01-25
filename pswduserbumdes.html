@@ -15,27 +15,30 @@ body {
 h1 {
   color:white;
   text-align:center;
-  margin-bottom:20px;
+  margin-bottom:25px;
+  font-size:28px;
 }
 
 .container {
   background:#fff;
-  padding:20px;
-  border-radius:15px;
-  margin-bottom:20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  padding:25px;
+  border-radius:20px;
+  margin-bottom:25px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
 
 h3 {
   color:#333;
+  font-size:20px;
+  margin-bottom:10px;
 }
 
 input, button, textarea {
   width:100%;
-  padding:12px;
-  margin-top:8px;
-  font-size:16px;
-  border-radius:8px;
+  padding:16px;
+  margin-top:10px;
+  font-size:18px;
+  border-radius:10px;
   border:1px solid #ccc;
   box-sizing:border-box;
 }
@@ -44,7 +47,9 @@ button {
   background:#2196f3;
   color:white;
   border:none;
-  margin-top:8px;
+  margin-top:10px;
+  font-size:18px;
+  cursor:pointer;
 }
 
 button.copy {
@@ -56,9 +61,10 @@ button.clear {
 }
 
 textarea {
-  height:90px;
+  height:110px;
   resize:none;
-  margin-top:8px;
+  margin-top:10px;
+  font-size:16px;
 }
 </style>
 </head>
@@ -68,7 +74,6 @@ textarea {
 
 <div class="container">
 <h3>Generate 1 (Cek User)</h3>
-
 <input type="text" id="prefix1" placeholder="Isi nama (contoh: ayah)">
 <button onclick="gen1()">Generate</button>
 <button class="copy" onclick="copy1()">Copy</button>
@@ -78,7 +83,6 @@ textarea {
 
 <div class="container">
 <h3>Generate 2 (Ganti Password)</h3>
-
 <input type="text" id="user2" placeholder="User (contoh: ayah1)">
 <input type="text" id="pass2" placeholder="Password Baru">
 <button onclick="gen2()">Generate</button>

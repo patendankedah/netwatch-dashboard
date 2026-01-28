@@ -1,136 +1,216 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>TOR - MONITOR</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>TOR - MONITOR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body {
-  margin: 0;
-  background: #000;
-  color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
-}
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
 
-/* ===== MENU VIEW ===== */
-#menuView {
-  padding: 15px;
-}
+        /* ===== MENU VIEW ===== */
+        #menuView {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
 
-h1 {
-  text-align: center;
-  font-size: 28px;
-  margin-bottom: 10px;
-}
+        h1 {
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 25px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0,255,204,0.3);
+        }
 
-.server-select {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+        .server-select {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-.server-select button {
-  padding: 14px;
-  font-size: 18px;
-  background: #222;
-  color: #fff;
-  border: 1px solid #444;
-  border-radius: 10px;
-  cursor: pointer;
-}
+        .server-select button {
+            padding: 16px;
+            font-size: 16px;
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
 
-.server-select button:hover {
-  background: #444;
-}
+        .server-select button:active {
+            transform: scale(0.98);
+            background: #333;
+        }
 
-/* ===== IFRAME VIEW ===== */
-#iframeView {
-  display: none;
-  width: 100vw;
-  height: 100vh;
-}
+        /* Tombol Spesial Ganti Password */
+        .btn-password {
+            background: #440000 !important;
+            border: 1px solid #ff4444 !important;
+            margin-top: 10px;
+        }
 
-#iframeView iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
+        /* Sub-menu untuk pilihan user */
+        #userSubMenu {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            background: #0a0a0a;
+            border-radius: 12px;
+            border: 1px dashed #444;
+            margin-bottom: 10px;
+        }
 
-/* MOBILE */
-@media (max-width: 768px) {
-  h1 { font-size: 24px; }
-  .server-select button { font-size: 16px; padding: 12px; }
-}
-</style>
+        #userSubMenu button {
+            background: #222;
+            font-size: 14px;
+            padding: 12px;
+        }
+
+        /* ===== IFRAME VIEW ===== */
+        #iframeView {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #iframeView iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Tombol Kembali Floating */
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            display: none;
+            z-index: 999;
+        }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            h1 { font-size: 22px; }
+            .server-select button { padding: 14px; }
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- ===== MENU ===== -->
 <div id="menuView">
-  <h1>📡 TOR – MONITOR</h1>
+    <h1>📡 TOR – MONITOR</h1>
 
-  <div class="server-select">
-    <button onclick="openPage('v1')">V1</button>
-    <button onclick="openPage('v2')">V2</button>
-    <button onclick="openPage('fixnet')">FIXNET</button>
-    <button onclick="openPage('bumdes')">BUMDES</button>
-    <button onclick="openPage('rekap')">Rekap Bulanan</button>
-  </div>
+    <div class="server-select">
+        <button onclick="openPage('v1')">ST-V1 MONITOR</button>
+        <button onclick="openPage('v2')">ST-V2 MONITOR</button>
+        <button onclick="openPage('fixnet')">FIXNET MONITOR</button>
+        <button onclick="openPage('bumdes')">BUMDES MONITOR</button>
+        
+        <button class="btn-password" onclick="toggleUserMenu()">🔑 MENU GANTI PASSWORD</button>
+        
+        <div id="userSubMenu">
+            <button onclick="openPage('v1-user')">Ganti Pass V1</button>
+            <button onclick="openPage('v2-user')">Ganti Pass V2</button>
+            <button onclick="openPage('fixnet-user')">Ganti Pass FIXNET</button>
+            <button onclick="openPage('bumdes-user')">Ganti Pass BUMDES</button>
+        </div>
+
+        <button onclick="openPage('rekap')" style="border-color: #00ffcc;">📊 REKAP BULANAN</button>
+    </div>
 </div>
 
-<!-- ===== IFRAME VIEW ===== -->
 <div id="iframeView">
-  <iframe id="pageFrame"></iframe>
+    <iframe id="pageFrame"></iframe>
 </div>
+
+<button id="floatBack" class="back-btn" onclick="goHome()">KEMBALI KE MENU</button>
 
 <script>
-
-function openPage(type) {
-
-  const frame = document.getElementById("pageFrame");
-
-  if (type === "v1") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/starnetv1.html";
-  }
-
-  if (type === "v2") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/starnetv2.html";
-  }
-
-  if (type === "fixnet") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/fixnet.html";
-  }
-
-  if (type === "bumdes") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/bumdes.html";
-  }
-
-  if (type === "rekap") {
-
-    let pass = prompt("Masukkan Password Rekap Bulanan:");
-
-    if (pass !== "ari") {
-      alert("Password salah!");
-      return;
+// Fungsi Buka-Tutup Menu User
+function toggleUserMenu() {
+    const subMenu = document.getElementById("userSubMenu");
+    if (subMenu.style.display === "flex") {
+        subMenu.style.display = "none";
+    } else {
+        subMenu.style.display = "flex";
     }
-
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/laporanbulananari.html";
-  }
-
-  document.getElementById("menuView").style.display = "none";
-  document.getElementById("iframeView").style.display = "block";
-
-  // Aktifkan tombol back
-  history.pushState(null, null, location.href);
 }
 
-/* BACK BUTTON HP => RELOAD KE HALAMAN AWAL */
-window.onpopstate = function () {
-  window.location.reload();
-};
+function openPage(type) {
+    const frame = document.getElementById("pageFrame");
+    const menuView = document.getElementById("menuView");
+    const iframeView = document.getElementById("iframeView");
+    const floatBack = document.getElementById("floatBack");
+    
+    let url = "";
 
+    // 1. URL UNTUK DASHBOARD (Bisa di Iframe karena HTTPS)
+    const dashboardUrls = {
+        'v1': "https://patendankedah.github.io/netwatch-dashboard/starnetv1.html",
+        'v2': "https://patendankedah.github.io/netwatch-dashboard/starnetv2.html",
+        'fixnet': "https://patendankedah.github.io/netwatch-dashboard/fixnet.html",
+        'bumdes': "https://patendankedah.github.io/netwatch-dashboard/bumdes.html",
+        'rekap': "https://patendankedah.github.io/netwatch-dashboard/laporanbulananari.html"
+    };
+
+    // 2. URL UNTUK USER (Wajib Tab Baru karena HTTP / IP Address)
+    const userUrls = {
+        'v1-user': "http://27.112.79.207/starv1_user.php",
+        'v2-user': "http://27.112.79.207/starv2_user.php",
+        'fixnet-user': "http://27.112.79.207/fixnet_user.php",
+        'bumdes-user': "http://27.112.79.207/bumdes_user.php"
+    };
+
+    // EKSEKUSI LOGIKA
+    if (dashboardUrls[type]) {
+        // Cek password khusus rekap
+        if (type === "rekap") {
+            let pass = prompt("Masukkan Password Rekap:");
+            if (pass !== "ari") {
+                alert("Password salah!");
+                return;
+            }
+        }
+
+        // Tampilkan dalam iframe
+        frame.src = dashboardUrls[type];
+        menuView.style.display = "none";
+        iframeView.style.display = "block";
+        floatBack.style.display = "block"; // Munculkan tombol kembali
+        history.pushState({view: 'iframe'}, null, "");
+
+    } else if (userUrls[type]) {
+        // Buka di tab baru agar tidak diblokir browser
+        window.open(userUrls[type], "_blank");
+    }
+}
+
+// Fungsi kembali ke menu utama
+function goHome() {
+    window.location.reload();
+}
+
+/* BACK BUTTON HP */
+window.onpopstate = function (event) {
+    window.location.reload();
+};
 </script>
 
 </body>

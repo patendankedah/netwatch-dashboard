@@ -77,8 +77,8 @@ h1 {
     <button onclick="openPage('fixnet')">FIXNET</button>
     <button onclick="openPage('bumdes')">BUMDES</button>
 
-    <!-- ✅ ONE CLICK BUMDES USER -->
-    <button onclick="openPage('bumdes_user')">BUMDES User</button>
+    <!-- ✅ FIX: BUMDES USER TANPA IFRAME -->
+    <button onclick="openBumdesUser()">BUMDES User</button>
 
     <button onclick="openPage('rekap')">Rekap Bulanan</button>
   </div>
@@ -111,31 +111,27 @@ function openPage(type) {
     frame.src = "https://patendankedah.github.io/netwatch-dashboard/bumdes.html";
   }
 
-  /* ✅ ONE CLICK BUMDES USER */
-  if (type === "bumdes_user") {
-    frame.src = "http://27.112.79.207/bumdes_user.php";
-  }
-
   if (type === "rekap") {
-
     let pass = prompt("Masukkan Password Rekap Bulanan:");
-
     if (pass !== "ari") {
       alert("Password salah!");
       return;
     }
-
     frame.src = "https://patendankedah.github.io/netwatch-dashboard/laporanbulananari.html";
   }
 
   document.getElementById("menuView").style.display = "none";
   document.getElementById("iframeView").style.display = "block";
 
-  // Aktifkan tombol back HP
   history.pushState(null, null, location.href);
 }
 
-/* BACK BUTTON HP => KEMBALI KE MENU */
+/* ✅ BUMDES USER REDIRECT LANGSUNG */
+function openBumdesUser() {
+  window.location.href = "http://27.112.79.207/bumdes_user.php";
+}
+
+/* BACK BUTTON HP */
 window.onpopstate = function () {
   window.location.reload();
 };

@@ -6,13 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script>
-// catat bahwa kita dari menu
-history.replaceState({ from: "menu" }, "", "");
+// Simpan URL menu
+sessionStorage.setItem("returnToMenu", document.referrer);
 
-// redirect setelah history siap
-setTimeout(() => {
-  window.location.href = "http://27.112.79.207/bumdes_user.php";
-}, 100);
+// Redirect KELUAR iframe (top level)
+setTimeout(function () {
+  window.top.location.href = "http://27.112.79.207/bumdes_user.php";
+}, 200);
 </script>
 </head>
 

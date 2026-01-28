@@ -38,10 +38,28 @@ h1 {
   border: 1px solid #444;
   border-radius: 10px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 .server-select button:hover {
   background: #444;
+}
+
+/* Tombol Spesial Ganti Password */
+.btn-password {
+  background: #b30000 !important; /* Warna merah gelap agar beda */
+  font-weight: bold;
+}
+
+/* Sub-menu untuk pilihan user */
+#userSubMenu {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: #111;
+  border-radius: 10px;
+  border: 1px dashed #555;
 }
 
 /* ===== IFRAME VIEW ===== */
@@ -75,7 +93,17 @@ h1 {
     <button onclick="openPage('v2')">V2</button>
     <button onclick="openPage('fixnet')">FIXNET</button>
     <button onclick="openPage('bumdes')">BUMDES</button>
-    <button onclick="openPage('bumdes_user')">BUMDES User</button> <button onclick="openPage('rekap')">Rekap Bulanan</button>
+    
+    <button class="btn-password" onclick="toggleUserMenu()">🔑 GANTI PASSWORD USER</button>
+    
+    <div id="userSubMenu">
+       <button onclick="openPage('v1-user')">V1-User</button>
+       <button onclick="openPage('v2-user')">V2-User</button>
+       <button onclick="openPage('fixnet-user')">FIXNET-User</button>
+       <button onclick="openPage('bumdes-user')">BUMDES-User</button>
+    </div>
+
+    <button onclick="openPage('rekap')">Rekap Bulanan</button>
   </div>
 </div>
 
@@ -84,56 +112,53 @@ h1 {
 </div>
 
 <script>
+// Fungsi untuk buka/tutup pilihan user
+function toggleUserMenu() {
+  const subMenu = document.getElementById("userSubMenu");
+  if (subMenu.style.display === "flex") {
+    subMenu.style.display = "none";
+  } else {
+    subMenu.style.display = "flex";
+  }
+}
 
 function openPage(type) {
-
   const frame = document.getElementById("pageFrame");
+  let url = "";
 
-  if (type === "v1") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/starnetv1.html";
-  }
+  // Mapping URL
+  if (type === "v1") url = "https://patendankedah.github.io/netwatch-dashboard/starnetv1.html";
+  else if (type === "v2") url = "https://patendankedah.github.io/netwatch-dashboard/starnetv2.html";
+  else if (type === "fixnet") url = "https://patendankedah.github.io/netwatch-dashboard/fixnet.html";
+  else if (type === "bumdes") url = "https://patendankedah.github.io/netwatch-dashboard/bumdes.html";
+  
+  // URL USER (IP Address)
+  else if (type === "v1-user") url = "http://27.112.79.207/starv1_user.php";
+  else if (type === "v2-user") url = "http://27.112.79.207/starv2_user.php";
+  else if (type === "fixnet-user") url = "http://27.112.79.207/fixnet_user.php";
+  else if (type === "bumdes-user") url = "http://27.112.79.207/bumdes_user.php";
 
-  if (type === "v2") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/starnetv2.html";
-  }
-
-  if (type === "fixnet") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/fixnet.html";
-  }
-
-  if (type === "bumdes") {
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/bumdes.html";
-  }
-
-  /* Link BUMDES User */
-  if (type === "bumdes_user") {
-    frame.src = "http://27.112.79.207/bumdes_user.php";
-  }
-
-  if (type === "rekap") {
-
+  else if (type === "rekap") {
     let pass = prompt("Masukkan Password Rekap Bulanan:");
-
     if (pass !== "ari") {
       alert("Password salah!");
       return;
     }
-
-    frame.src = "https://patendankedah.github.io/netwatch-dashboard/laporanbulananari.html";
+    url = "https://patendankedah.github.io/netwatch-dashboard/laporanbulananari.html";
   }
 
-  document.getElementById("menuView").style.display = "none";
-  document.getElementById("iframeView").style.display = "block";
-
-  // Aktifkan tombol back
-  history.pushState(null, null, location.href);
+  if (url !== "") {
+    frame.src = url;
+    document.getElementById("menuView").style.display = "none";
+    document.getElementById("iframeView").style.display = "block";
+    history.pushState(null, null, location.href);
+  }
 }
 
 /* BACK BUTTON HP => RELOAD KE HALAMAN AWAL */
 window.onpopstate = function () {
   window.location.reload();
 };
-
 </script>
 
 </body>

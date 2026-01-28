@@ -67,7 +67,6 @@ h1 {
 
 <body>
 
-<!-- ===== MENU ===== -->
 <div id="menuView">
   <h1>📡 TOR – MONITOR</h1>
 
@@ -76,21 +75,15 @@ h1 {
     <button onclick="openPage('v2')">V2</button>
     <button onclick="openPage('fixnet')">FIXNET</button>
     <button onclick="openPage('bumdes')">BUMDES</button>
-
-    <!-- ✅ BUMDES USER -->
-    <button onclick="openBumdesUser()">BUMDES User</button>
-
-    <button onclick="openPage('rekap')">Rekap Bulanan</button>
+    <button onclick="openPage('bumdes_user')">BUMDES User</button> <button onclick="openPage('rekap')">Rekap Bulanan</button>
   </div>
 </div>
 
-<!-- ===== IFRAME VIEW ===== -->
 <div id="iframeView">
   <iframe id="pageFrame"></iframe>
 </div>
 
 <script>
-let currentMode = "menu"; // menu | iframe
 
 function openPage(type) {
 
@@ -112,46 +105,35 @@ function openPage(type) {
     frame.src = "https://patendankedah.github.io/netwatch-dashboard/bumdes.html";
   }
 
+  /* Link BUMDES User */
+  if (type === "bumdes_user") {
+    frame.src = "http://27.112.79.207/bumdes_user.php";
+  }
+
   if (type === "rekap") {
+
     let pass = prompt("Masukkan Password Rekap Bulanan:");
+
     if (pass !== "ari") {
       alert("Password salah!");
       return;
     }
+
     frame.src = "https://patendankedah.github.io/netwatch-dashboard/laporanbulananari.html";
   }
 
   document.getElementById("menuView").style.display = "none";
   document.getElementById("iframeView").style.display = "block";
 
-  currentMode = "iframe";
-  history.pushState({ mode: "iframe" }, "", "");
+  // Aktifkan tombol back
+  history.pushState(null, null, location.href);
 }
 
-/* ===== BUMDES USER (PAKAI WRAPPER HTML) ===== */
-function openBumdesUser() {
-
-  const frame = document.getElementById("pageFrame");
-
-  frame.src = "https://patendankedah.github.io/netwatch-dashboard/bumdesuser.html";
-
-  document.getElementById("menuView").style.display = "none";
-  document.getElementById("iframeView").style.display = "block";
-
-  currentMode = "iframe";
-  history.pushState({ mode: "iframe" }, "", "");
-}
-
-/* ===== BACK BUTTON HP ===== */
+/* BACK BUTTON HP => RELOAD KE HALAMAN AWAL */
 window.onpopstate = function () {
-
-  if (currentMode === "iframe") {
-    document.getElementById("iframeView").style.display = "none";
-    document.getElementById("menuView").style.display = "block";
-    document.getElementById("pageFrame").src = "";
-    currentMode = "menu";
-  }
+  window.location.reload();
 };
+
 </script>
 
 </body>

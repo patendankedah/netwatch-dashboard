@@ -76,6 +76,10 @@ h1 {
     <button onclick="openPage('v2')">V2</button>
     <button onclick="openPage('fixnet')">FIXNET</button>
     <button onclick="openPage('bumdes')">BUMDES</button>
+
+    <!-- ✅ ONE CLICK BUMDES USER -->
+    <button onclick="openPage('bumdes_user')">BUMDES User</button>
+
     <button onclick="openPage('rekap')">Rekap Bulanan</button>
   </div>
 </div>
@@ -107,6 +111,11 @@ function openPage(type) {
     frame.src = "https://patendankedah.github.io/netwatch-dashboard/bumdes.html";
   }
 
+  /* ✅ ONE CLICK BUMDES USER */
+  if (type === "bumdes_user") {
+    frame.src = "http://27.112.79.207/bumdes_user.php";
+  }
+
   if (type === "rekap") {
 
     let pass = prompt("Masukkan Password Rekap Bulanan:");
@@ -122,11 +131,11 @@ function openPage(type) {
   document.getElementById("menuView").style.display = "none";
   document.getElementById("iframeView").style.display = "block";
 
-  // Aktifkan tombol back
+  // Aktifkan tombol back HP
   history.pushState(null, null, location.href);
 }
 
-/* BACK BUTTON HP => RELOAD KE HALAMAN AWAL */
+/* BACK BUTTON HP => KEMBALI KE MENU */
 window.onpopstate = function () {
   window.location.reload();
 };
